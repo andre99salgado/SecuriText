@@ -25,6 +25,9 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static sample.FileHandler.FileChooserAndSave;
+import static sample.FileHandler.getChooser;
+
 public class Controller implements Initializable {
 
 
@@ -37,8 +40,8 @@ public class Controller implements Initializable {
     @FXML
     private VBox anchorid;
 
-    FileInputStream f;
-    ObjectInputStream fileStream;
+    private boolean foiAberto = false;
+
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -48,6 +51,7 @@ public class Controller implements Initializable {
     @FXML
     private void openFile(ActionEvent event) {
 
+        foiAberto = true;
         FileChooser chooser = getChooser();
         File selectedFile = chooser.showOpenDialog(null);
         if (selectedFile != null) {
@@ -57,33 +61,28 @@ public class Controller implements Initializable {
         }
     }
 
+    //TODO: Era melhor que só aparecesse o explorador caso o ficheiro nao existisse antes, ou quando se clica em "Save As..."
     @FXML
     void createFile(ActionEvent event) {
-        //TODO: código repetido
-        FileChooser chooser = getChooser();
-        File selectedFile = chooser.showSaveDialog(null);
-        if (selectedFile != null) {
-            writeFile(txtAreaTotal.getText(), selectedFile.getAbsoluteFile().toString());
+        //Se não foi aberto usando o Open
+        String text = txtAreaTotal.getText();
+        if (!foiAberto) {
+            openCipherSelect((Stage) txtAreaTotal.getScene().getWindow(), text);
+
+        } else {
+            FileChooserAndSave(text);
         }
 
     }
 
-    void writeFile(String Text, String fileName) {
-        try {
-            FileOutputStream fout = new FileOutputStream(fileName);
-            ObjectOutputStream ow = new ObjectOutputStream(fout);
-            ow.writeObject(Text);
-            fout.close();
-            System.out.println("success...");
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
 
     String readFile(String fileName) {
 
         try {
+            FileInputStream f;
             f = new FileInputStream(new File(Paths.get(System.getProperty("user.home"), "SecuriTexts", fileName).toString()));
+
+            ObjectInputStream fileStream;
             fileStream = new ObjectInputStream(f);
             return (String) fileStream.readObject();
         } catch (EOFException e) {
@@ -116,14 +115,21 @@ public class Controller implements Initializable {
         System.exit(0);
     }
 
-    public FileChooser getChooser() {
-        FileChooser chooser = new FileChooser();
-        File dir = new File(Paths.get(System.getProperty("user.home"), "SecuriTexts").toAbsolutePath().toString());
-        if (!dir.exists()) {
-            dir.mkdir();
+    public void openCipherSelect(Stage stage, String text) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader();
+            fxmlLoader.setLocation(getClass().getResource("select_cipher.fxml"));
+            Scene scene = new Scene(fxmlLoader.load());
+            SelectCipherController controller = fxmlLoader.<SelectCipherController>getController();
+            controller.setText(text);
+            stage.setScene(scene);
+            stage.setTitle("Select Option.");
+            stage.show();
+
+        } catch (IOException e) {
+            Logger logger = Logger.getLogger(getClass().getName());
+            logger.log(Level.SEVERE, "Failed to create new Window.", e);
         }
-        chooser.setInitialDirectory(dir);
-        return chooser;
     }
 
 }
