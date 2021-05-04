@@ -19,6 +19,8 @@ import javafx.stage.Window;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -46,12 +48,9 @@ public class Controller implements Initializable {
     @FXML
     private void openFile(ActionEvent event) {
 
-        FileChooser chooser = new FileChooser();
-        File dir = new File("C:\\SecuriTexts");
-        chooser.setInitialDirectory(dir);
+        FileChooser chooser = getChooser();
         File selectedFile = chooser.showOpenDialog(null);
         if (selectedFile != null) {
-            System.out.println("File selected: " + selectedFile.getName());
             txtArea.setText(selectedFile.getName());
             txtAreaTotal.setText(readFile(selectedFile.getName()));
             txtAreaTotal.requestFocus();
@@ -60,13 +59,18 @@ public class Controller implements Initializable {
 
     @FXML
     void createFile(ActionEvent event) {
-        String textFileName = txtArea.getText();
-        writeFile(txtAreaTotal.getText(), textFileName);
+        //TODO: código repetido
+        FileChooser chooser = getChooser();
+        File selectedFile = chooser.showSaveDialog(null);
+        if (selectedFile != null) {
+            writeFile(txtAreaTotal.getText(), selectedFile.getAbsoluteFile().toString());
+        }
+
     }
 
     void writeFile(String Text, String fileName) {
         try {
-            FileOutputStream fout = new FileOutputStream("C:\\SecuriTexts\\" + fileName);
+            FileOutputStream fout = new FileOutputStream(fileName);
             ObjectOutputStream ow = new ObjectOutputStream(fout);
             ow.writeObject(Text);
             fout.close();
@@ -77,8 +81,9 @@ public class Controller implements Initializable {
     }
 
     String readFile(String fileName) {
+
         try {
-            f = new FileInputStream(new File("C:\\SecuriTexts\\" + fileName));
+            f = new FileInputStream(new File(Paths.get(System.getProperty("user.home"), "SecuriTexts", fileName).toString()));
             fileStream = new ObjectInputStream(f);
             return (String) fileStream.readObject();
         } catch (EOFException e) {
@@ -106,10 +111,19 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void closeButtonAction(ActionEvent event){
+    private void closeButtonAction(ActionEvent event) {
         Platform.exit();
         System.exit(0);
     }
 
+    public FileChooser getChooser() {
+        FileChooser chooser = new FileChooser();
+        File dir = new File(Paths.get(System.getProperty("user.home"), "SecuriTexts").toAbsolutePath().toString());
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+        chooser.setInitialDirectory(dir);
+        return chooser;
+    }
 
 }
