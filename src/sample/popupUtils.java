@@ -5,6 +5,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Popup;
@@ -27,7 +28,7 @@ public class popupUtils {
 
 
         HBox layout = new HBox(10);
-        layout.setStyle("-fx-background-color: cornsilk; -fx-padding: 10;");
+        layout.setStyle("-fx-padding: 10;");
         layout.getChildren().addAll(es);
         Stage stage = new Stage();
         stage.setScene(new Scene(layout));
@@ -35,27 +36,54 @@ public class popupUtils {
     }
 
     public static void selectionPopup(Stage currentStage, String text) {
-        Button show = new Button("Encrypt");
-        show.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                CipherUtil cipherUtil = new CipherUtil(text);
-                File fileSaved = FileHandler.FileChooserAndSave(cipherUtil.getEncryptedString());
-                FileHandler.writeFile(cipherUtil.getKeyAsString(), Paths.get(fileSaved.getParent(), (fileSaved.getName() + ".key.txt")).toAbsolutePath().toString());
-                //TODO: Deve mostrar outro POPUP a dizer para remover o ficheiro daquele sítio
-            }
+        Button encrypt = new Button("Encrypt");
+        encrypt.setOnAction(event -> {
+            CipherUtil cipherUtil = new CipherUtil(text);
+            File fileSaved = FileHandler.FileChooserAndSave(cipherUtil.getEncryptedString());
+            FileHandler.writeFile(cipherUtil.getKeyAsString(), Paths.get(fileSaved.getParent(), (fileSaved.getName() + ".key.txt")).toAbsolutePath().toString());
+            //TODO: Deve mostrar outro POPUP a dizer para remover o ficheiro daquele sítio
+            //Fechar depois de clicar em algum botão
+            CloseAndWarn(event);
         });
 
-        Button hide = new Button("Hide");
-        hide.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                ((Popup) event.getSource()).show(currentStage);
-            }
+        Button authenticate = new Button("Authenticate");
+        authenticate.setOnAction(event -> {
+            //FAZER
+            Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+            CloseAndWarn(event);
         });
-        Button test = new Button("Test");
-        popup(currentStage, show, hide, test);
+
+        Button both = new Button("Both");
+        both.setOnAction(event -> {
+            //FAZER
+            Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+            CloseAndWarn(event);
+        });
+
+        popup(currentStage, encrypt, authenticate, both);
 
     }
+
+    private static void closeFromEvent(ActionEvent event) {
+        Node source = (Node) event.getSource();
+        Stage stage = (Stage) source.getScene().getWindow();
+        stage.close();
+    }
+
+    private static void CloseAndWarn(ActionEvent event) {
+        Stage newStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+        closeFromEvent(event);
+        MessagePopup(newStage, "It's recommended that you remove the generated key file from the directory you saved to.");
+
+    }
+
+    private static void MessagePopup(Stage currentStage, String message) {
+        Label label = new Label(message);
+        Button okButton = new Button("OK");
+        okButton.setOnAction(popupUtils::closeFromEvent);
+        popup(currentStage, label, okButton);
+
+    }
+
 
 }

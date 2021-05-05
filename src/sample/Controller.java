@@ -49,10 +49,8 @@ public class Controller implements Initializable {
 
             currentFilePath = selectedFile.getAbsolutePath();
             String currentKeyPath = selectedKeyFile.getAbsolutePath();
+
             // Assume-se que, caso não haja o ficheiro de chaves que
-
-            System.out.println(FileHandler.readFile(currentFilePath) + FileHandler.readFile(currentKeyPath));
-
             //txtArea.setText(selectedFile.getName());
             CipherUtil cipherUtil = new CipherUtil(FileHandler.readFile(currentFilePath),
                     FileHandler.readFile(currentKeyPath));

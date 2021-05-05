@@ -39,6 +39,7 @@ public class CipherUtil {
         this.key = StringToSecretKey(Base64.getDecoder().decode(key));
     }
 
+    //Devolve chave como string (para gravar)
     public String getKeyAsString() {
         return SecretKeyToString(this.key);
     }
@@ -47,10 +48,12 @@ public class CipherUtil {
         this.input = input;
     }
 
+    //Devolve string cifrada
     public String getEncryptedString() {
         return encrypt(algorithm, this.input, this.key);
     }
 
+    //Devolve string decifrada
     public String getDecryptedString() {
         return decrypt(algorithm, this.input, this.key);
     }
