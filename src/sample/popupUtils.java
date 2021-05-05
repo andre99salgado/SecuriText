@@ -49,7 +49,9 @@ public class popupUtils {
         Button authenticate = new Button("Authenticate");
         authenticate.setOnAction(event -> {
             //FAZER
-            Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+            AuthenticateUtils authenticateUtils = new AuthenticateUtils(text);
+            authenticateUtils.
+
             CloseAndWarn(event);
         });
 
