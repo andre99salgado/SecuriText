@@ -33,7 +33,6 @@ public class FileHandler {
             ObjectOutputStream ow = new ObjectOutputStream(fout);
             ow.writeObject(Text);
             fout.close();
-            System.out.println("success...");
         } catch (Exception e) {
             System.out.println(e);
         }
