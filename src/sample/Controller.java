@@ -19,8 +19,6 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static sample.FileHandler.FileChooserAndSave;
-import static sample.FileHandler.getChooser;
 
 public class Controller implements Initializable {
 
@@ -34,7 +32,8 @@ public class Controller implements Initializable {
     @FXML
     private VBox anchorid;
 
-    private boolean foiAberto = false;
+    private String currentFilePath = "";
+    private CipherUtil currentCipherUtil;
 
 
     @Override
@@ -45,47 +44,41 @@ public class Controller implements Initializable {
     @FXML
     private void openFile(ActionEvent event) {
 
-        foiAberto = true;
-        FileChooser chooser = getChooser();
-        File selectedFile = chooser.showOpenDialog(null);
-        if (selectedFile != null) {
-            txtArea.setText(selectedFile.getName());
-            txtAreaTotal.setText(readFile(selectedFile.getName()));
+        File selectedFile = FileHandler.FileChooserAndGetFile();
+        File selectedKeyFile = FileHandler.FileChooserAndGetFile();
+        //TODO: talvez adicionar alguma cena para a chave ser introduzida manualmente
+        if (selectedFile != null && selectedKeyFile != null) {
+
+            currentFilePath = selectedFile.getAbsolutePath();
+            String currentKeyPath = selectedKeyFile.getAbsolutePath();
+            // Assume-se que, caso não haja o ficheiro de chaves que
+
+            System.out.println(FileHandler.readFile(currentFilePath) + FileHandler.readFile(currentKeyPath));
+
+            //txtArea.setText(selectedFile.getName());
+            CipherUtil cipherUtil = new CipherUtil(FileHandler.readFile(currentFilePath),
+                    FileHandler.readFile(currentKeyPath));
+            this.currentCipherUtil = cipherUtil;
+
+            txtAreaTotal.setText(cipherUtil.getDecryptedString());
             txtAreaTotal.requestFocus();
         }
     }
 
-    //TODO: Era melhor que só aparecesse o explorador caso o ficheiro nao existisse antes, ou quando se clica em "Save As..."
     @FXML
     void createFile(ActionEvent event) {
         //Se não foi aberto usando o Open
         String text = txtAreaTotal.getText();
-        if (!foiAberto) {
-            openCipherSelect((Stage) txtAreaTotal.getScene().getWindow(), text);
+        if (currentFilePath.equals("")) {
+            popupUtils.selectionPopup((Stage) txtAreaTotal.getScene().getWindow(), text);
 
         } else {
-            FileChooserAndSave(text);
+            currentCipherUtil.setInput(text);
+            FileHandler.writeFile(currentCipherUtil.getEncryptedString(), currentFilePath);
         }
 
     }
 
-
-    private String readFile(String fileName) {
-
-        try {
-            FileInputStream f;
-            f = new FileInputStream(new File(Paths.get(System.getProperty("user.home"), "SecuriTexts", fileName).toString()));
-
-            ObjectInputStream fileStream;
-            fileStream = new ObjectInputStream(f);
-            return (String) fileStream.readObject();
-        } catch (EOFException e) {
-            System.out.println("\n\nEmpty File \n\n");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
 
     @FXML
     public void newWindow(ActionEvent event) {
@@ -107,23 +100,6 @@ public class Controller implements Initializable {
     private void closeButtonAction(ActionEvent event) {
         Platform.exit();
         System.exit(0);
-    }
-
-    public void openCipherSelect(Stage stage, String text) {
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader();
-            fxmlLoader.setLocation(getClass().getResource("select_cipher.fxml"));
-            Scene scene = new Scene(fxmlLoader.load());
-            SelectCipherController controller = fxmlLoader.<SelectCipherController>getController();
-            controller.setText(text);
-            stage.setScene(scene);
-            stage.setTitle("Select Option.");
-            stage.show();
-
-        } catch (IOException e) {
-            Logger logger = Logger.getLogger(getClass().getName());
-            logger.log(Level.SEVERE, "Failed to create new Window.", e);
-        }
     }
 
 }
