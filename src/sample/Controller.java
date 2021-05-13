@@ -33,6 +33,7 @@ public class Controller implements Initializable {
     private String currentFilePath = "";
     private CipherUtil currentCipherUtil;
 
+    private AuthenticateUtils currentAuthenticateUtil;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -44,31 +45,76 @@ public class Controller implements Initializable {
 
         File selectedFile = FileHandler.FileChooserAndGetFile();
         File selectedKeyFile = FileHandler.FileChooserAndGetFile();
+
         //TODO: talvez adicionar alguma cena para a chave ser introduzida manualmente
         if (selectedFile != null && selectedKeyFile != null) {
 
-            currentFilePath = selectedFile.getAbsolutePath();
-            String currentKeyPath = selectedKeyFile.getAbsolutePath();
+            /////////////////// podiamos fazer função
+            String nome = selectedKeyFile.getName();
+            String[] partes = nome.split("-");
+            String tipo_ficheiro = partes[partes.length - 1];
+            System.out.println("Tipo de Ficheiro:" + tipo_ficheiro);
 
-            // Assume-se que, caso não haja o ficheiro de chaves que
-            //txtArea.setText(selectedFile.getName());
-            CipherUtil cipherUtil = new CipherUtil(FileHandler.readFile(currentFilePath),
-                    FileHandler.readFile(currentKeyPath));
-            this.currentCipherUtil = cipherUtil;
+            ///////////////////////////////
+            if (tipo_ficheiro.equals("key.txt")) {
 
-            txtAreaTotal.setText(cipherUtil.getDecryptedString());
-            txtAreaTotal.requestFocus();
+                currentFilePath = selectedFile.getAbsolutePath();
+                String currentKeyPath = selectedKeyFile.getAbsolutePath();
+
+                // Assume-se que, caso não haja o ficheiro de chaves que
+                //txtArea.setText(selectedFile.getName());
+                CipherUtil cipherUtil = new CipherUtil(FileHandler.readFile(currentFilePath),
+                        FileHandler.readFile(currentKeyPath));
+                this.currentCipherUtil = cipherUtil;
+
+                txtAreaTotal.setText(cipherUtil.getDecryptedString());
+                txtAreaTotal.requestFocus();
+
+            }
+            if (tipo_ficheiro.equals("keyHmac.txt")) {
+                System.out.println("TOU AQUI");
+                
+                File selectedHMACFile = FileHandler.FileChooserAndGetFile();
+
+                currentFilePath = selectedFile.getAbsolutePath();
+                String currentKeyPath = selectedKeyFile.getAbsolutePath();
+
+                String currentHMACPath = selectedHMACFile.getAbsolutePath();
+
+                // Assume-se que, caso não haja o ficheiro de chaves que
+                //txtArea.setText(selectedFile.getName());
+                AuthenticateUtils authenticateUtils = new AuthenticateUtils(FileHandler.readFile(currentFilePath),
+                        FileHandler.readFile(currentKeyPath), FileHandler.readFile(currentHMACPath));
+
+                this.currentAuthenticateUtil = authenticateUtils;
+
+                //verificar o hmac 
+                String texto = currentAuthenticateUtil.getInput();
+                String hmac = currentAuthenticateUtil.getHmac();
+                String privateKey = currentAuthenticateUtil.getPrivateKey();
+
+                if (currentAuthenticateUtil.verifyHmac(texto, hmac, privateKey)) {
+
+                    txtAreaTotal.setText(authenticateUtils.getInput());
+                    txtAreaTotal.requestFocus();
+
+                }
+
+            }
         }
     }
 
+    ///// GANDA CONFUSÃO !!!!!!!!!!!!!!!!!!!!!!!!
+    
     @FXML
     void createFile(ActionEvent event) {
         //Se não foi aberto usando o Open
         String text = txtAreaTotal.getText();
+        // Se o ficheiro ainda não existir
         if (currentFilePath.equals("")) {
             popupUtils.selectionPopup((Stage) txtAreaTotal.getScene().getWindow(), text);
 
-        } else {
+        } else { //incompleto -> melhorar , verificar se o ficheiro foi só cifrado , autenticado ou ambos
             currentCipherUtil.setInput(text);
             FileHandler.writeFile(currentCipherUtil.getEncryptedString(), currentFilePath);
         }

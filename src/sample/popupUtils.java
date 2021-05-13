@@ -14,6 +14,11 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class popupUtils {
 
@@ -40,7 +45,7 @@ public class popupUtils {
         encrypt.setOnAction(event -> {
             CipherUtil cipherUtil = new CipherUtil(text);
             File fileSaved = FileHandler.FileChooserAndSave(cipherUtil.getEncryptedString());
-            FileHandler.writeFile(cipherUtil.getKeyAsString(), Paths.get(fileSaved.getParent(), (fileSaved.getName() + ".key.txt")).toAbsolutePath().toString());
+            FileHandler.writeFile(cipherUtil.getKeyAsString(), Paths.get(fileSaved.getParent(), (fileSaved.getName() + "-key.txt")).toAbsolutePath().toString());
             //TODO: Deve mostrar outro POPUP a dizer para remover o ficheiro daquele sítio
             //Fechar depois de clicar em algum botão
             CloseAndWarn(event);
@@ -50,9 +55,28 @@ public class popupUtils {
         authenticate.setOnAction(event -> {
             //FAZER
             AuthenticateUtils authenticateUtils = new AuthenticateUtils(text);
-            authenticateUtils.
+            
+            try {
+                
+                File fileSaved = FileHandler.FileChooserAndSave(text); // ficheiro original
+                System.out.println("\nEste é o HMAC:" + authenticateUtils.calculateHMAC(text));
+                System.out.println("\n Esta é a private key " + authenticateUtils.getPrivateKey());
+                FileHandler.writeFile(authenticateUtils.getPrivateKey(), Paths.get(fileSaved.getParent(), (fileSaved.getName() + "-keyHmac.txt")).toAbsolutePath().toString()); // ficheiro com chave privada
+                FileHandler.writeFile(authenticateUtils.calculateHMAC(text), Paths.get(fileSaved.getParent(), (fileSaved.getName() + "-hmac.txt")).toAbsolutePath().toString()); // ficheiro com o hmac
+                
+            } catch (SignatureException ex) {
+                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NoSuchAlgorithmException ex) {
+                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvalidKeyException ex) {
+                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
-            CloseAndWarn(event);
+
+            ////
+            
+           // authenticateUtils.
+                    CloseAndWarn(event);
         });
 
         Button both = new Button("Both");

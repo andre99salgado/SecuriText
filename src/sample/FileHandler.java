@@ -54,6 +54,7 @@ public class FileHandler {
             FileOutputStream fout = new FileOutputStream(fileName);
             ObjectOutputStream ow = new ObjectOutputStream(fout);
             ow.writeObject(Text);
+            ow.flush();
             fout.close();
         } catch (Exception e) {
             System.out.println(e);

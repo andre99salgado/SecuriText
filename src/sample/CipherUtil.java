@@ -112,4 +112,3 @@ public class CipherUtil {
         return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
     }
 }
-
