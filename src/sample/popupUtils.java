@@ -1,18 +1,15 @@
 package sample;
 
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.stage.FileChooser;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 
 import java.io.File;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -82,7 +79,33 @@ public class popupUtils {
         Button both = new Button("Both");
         both.setOnAction(event -> {
             //FAZER
-            Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+           // Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
+           
+           //cifrar 
+           CipherUtil cipherUtil = new CipherUtil(text);
+           String encriptada = cipherUtil.getEncryptedString();
+           //FileHandler.writeFile(cipherUtil.getKeyAsString(), Paths.get(fileSaved.getParent(), (fileSaved.getName() + "-key.txt")).toAbsolutePath().toString());
+     
+           //autentiticar 
+           AuthenticateUtils authenticateUtils = new AuthenticateUtils(encriptada);
+            
+            try {
+                
+                File fileSaved = FileHandler.FileChooserAndSave(encriptada); // ficheiro encriptado
+               FileHandler.writeFile(cipherUtil.getKeyAsString(), Paths.get(fileSaved.getParent(), (fileSaved.getName() + "-EncryptKeyPrivateKey.txt")).toAbsolutePath().toString());
+               FileHandler.writeFile(authenticateUtils.getPrivateKey(), Paths.get(fileSaved.getParent(), (fileSaved.getName() + "-EncryptKeyPrivateKey.txt")).toAbsolutePath().toString()); 
+               FileHandler.writeFile(authenticateUtils.calculateHMAC(encriptada), Paths.get(fileSaved.getParent(), (fileSaved.getName() + "-hmac.txt")).toAbsolutePath().toString()); // ficheiro com o hmac
+                
+            } catch (SignatureException ex) {
+                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NoSuchAlgorithmException ex) {
+                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvalidKeyException ex) {
+                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
+            }
+
+           
+           
             CloseAndWarn(event);
         });
 

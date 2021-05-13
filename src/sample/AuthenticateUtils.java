@@ -1,7 +1,5 @@
 package sample;
 
-import static com.sun.org.apache.bcel.internal.classfile.Utility.toHexString;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.Base64;
@@ -9,11 +7,8 @@ import java.util.Formatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.crypto.Mac;
-import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import static sample.CipherUtil.SecretKeyToString;
-import static sample.CipherUtil.StringToSecretKey;
-import sun.rmi.runtime.Log;
+
 
 public class AuthenticateUtils {
 
@@ -41,8 +36,7 @@ public class AuthenticateUtils {
         this.hmac= hmac;
     }
     
-    
-    
+
     public String getSignedText() {
         try {
             return sign(this.input, keyPair.getPrivate());

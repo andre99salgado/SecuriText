@@ -17,9 +17,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 public class Controller implements Initializable {
-
 
     @FXML
     private TextField txtArea;
@@ -58,54 +56,50 @@ public class Controller implements Initializable {
             ///////////////////////////////
             if (tipo_ficheiro.equals("key.txt")) {
 
-                currentFilePath = selectedFile.getAbsolutePath();
-                String currentKeyPath = selectedKeyFile.getAbsolutePath();
+                CipherUtil cipherUtil = verificarDesencriptar(selectedFile, selectedKeyFile);
 
-                // Assume-se que, caso não haja o ficheiro de chaves que
-                //txtArea.setText(selectedFile.getName());
-                CipherUtil cipherUtil = new CipherUtil(FileHandler.readFile(currentFilePath),
-                        FileHandler.readFile(currentKeyPath));
-                this.currentCipherUtil = cipherUtil;
-
-                txtAreaTotal.setText(cipherUtil.getDecryptedString());
-                txtAreaTotal.requestFocus();
+                if (cipherUtil != null) {
+                    txtAreaTotal.setText(cipherUtil.getDecryptedString());
+                    txtAreaTotal.requestFocus();
+                }
 
             }
             if (tipo_ficheiro.equals("keyHmac.txt")) {
-                System.out.println("TOU AQUI");
-                
-                File selectedHMACFile = FileHandler.FileChooserAndGetFile();
-
-                currentFilePath = selectedFile.getAbsolutePath();
-                String currentKeyPath = selectedKeyFile.getAbsolutePath();
-
-                String currentHMACPath = selectedHMACFile.getAbsolutePath();
-
-                // Assume-se que, caso não haja o ficheiro de chaves que
-                //txtArea.setText(selectedFile.getName());
-                AuthenticateUtils authenticateUtils = new AuthenticateUtils(FileHandler.readFile(currentFilePath),
-                        FileHandler.readFile(currentKeyPath), FileHandler.readFile(currentHMACPath));
-
-                this.currentAuthenticateUtil = authenticateUtils;
-
-                //verificar o hmac 
-                String texto = currentAuthenticateUtil.getInput();
-                String hmac = currentAuthenticateUtil.getHmac();
-                String privateKey = currentAuthenticateUtil.getPrivateKey();
-
-                if (currentAuthenticateUtil.verifyHmac(texto, hmac, privateKey)) {
+                // System.out.println("TOU AQUI");
+                AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
+                if (authenticateUtils != null) {
 
                     txtAreaTotal.setText(authenticateUtils.getInput());
                     txtAreaTotal.requestFocus();
 
+                } else {
+                    System.out.println("Não é o mesmo cuidado!!!!!");
                 }
 
+            }
+            if (tipo_ficheiro.equals("EncryptKeyPrivateKey.txt")) {
+           
+                AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
+                
+                if (authenticateUtils != null) {
+
+                   CipherUtil cipherUtil = verificarDesencriptar(selectedFile, selectedKeyFile);
+                   if (cipherUtil != null) {
+                    txtAreaTotal.setText(cipherUtil.getDecryptedString());
+                    txtAreaTotal.requestFocus();
+                }else{
+                       System.out.println("Nao existe cifrado");
+                   }
+
+                } else {
+                    System.out.println("AVISO , NAO É O MESMO!!!!!");
+                }
+                
             }
         }
     }
 
     ///// GANDA CONFUSÃO !!!!!!!!!!!!!!!!!!!!!!!!
-    
     @FXML
     void createFile(ActionEvent event) {
         //Se não foi aberto usando o Open
@@ -120,7 +114,6 @@ public class Controller implements Initializable {
         }
 
     }
-
 
     @FXML
     public void newWindow(ActionEvent event) {
@@ -142,6 +135,54 @@ public class Controller implements Initializable {
     private void closeButtonAction(ActionEvent event) {
         Platform.exit();
         System.exit(0);
+    }
+
+    private AuthenticateUtils verificarHmac(File selectedFile, File selectedKeyFile) {
+
+        File selectedHMACFile = FileHandler.FileChooserAndGetFile();
+
+        currentFilePath = selectedFile.getAbsolutePath();
+        String currentKeyPath = selectedKeyFile.getAbsolutePath();
+
+        String currentHMACPath = selectedHMACFile.getAbsolutePath();
+
+        // Assume-se que, caso não haja o ficheiro de chaves que
+        //txtArea.setText(selectedFile.getName());
+        
+        //Abrir lixo
+        System.out.println("tou aqui"+FileHandler.readFile(currentKeyPath));
+        AuthenticateUtils authenticateUtils = new AuthenticateUtils(FileHandler.readFile(currentFilePath),
+                FileHandler.readFile(currentKeyPath), FileHandler.readFile(currentHMACPath));
+
+        this.currentAuthenticateUtil = authenticateUtils;
+
+        //verificar o hmac 
+        String texto = currentAuthenticateUtil.getInput();
+        String hmac = currentAuthenticateUtil.getHmac();
+        String privateKey = currentAuthenticateUtil.getPrivateKey();
+
+        if (currentAuthenticateUtil.verifyHmac(texto, hmac, privateKey)) {
+
+            return authenticateUtils;
+        }
+
+        return null;
+
+    }
+
+    private CipherUtil verificarDesencriptar(File selectedFile, File selectedKeyFile) {
+
+        currentFilePath = selectedFile.getAbsolutePath();
+        String currentKeyPath = selectedKeyFile.getAbsolutePath();
+
+        // Assume-se que, caso não haja o ficheiro de chaves que
+        //txtArea.setText(selectedFile.getName());
+        CipherUtil cipherUtil = new CipherUtil(FileHandler.readFile(currentFilePath),
+                FileHandler.readFile(currentKeyPath));
+        this.currentCipherUtil = cipherUtil;
+
+        return cipherUtil;
+
     }
 
 }
