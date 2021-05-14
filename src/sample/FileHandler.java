@@ -54,10 +54,19 @@ public class FileHandler {
         try {
             FileOutputStream fout = new FileOutputStream(fileName);
             ObjectOutputStream ow = new ObjectOutputStream(fout);
-            ArrayList<String> texto = new ArrayList<>();
-            texto.add(Text);
-            
-            ow.writeObject(texto);
+            ow.writeObject(Text);
+            ow.flush();
+            fout.close();
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
+    public static void writeFileArrayString(ArrayList<String> Text, String fileName) {
+        try {
+            FileOutputStream fout = new FileOutputStream(fileName);
+            ObjectOutputStream ow = new ObjectOutputStream(fout);
+            ow.writeObject(Text);
             ow.flush();
             fout.close();
         } catch (Exception e) {
@@ -73,25 +82,6 @@ public class FileHandler {
 
             ObjectInputStream fileStream;
             fileStream = new ObjectInputStream(f);
-            return ((ArrayList <String>) fileStream.readObject()).get(0);
-        } catch (EOFException e) {
-            System.out.println("\n\nEmpty File \n\n");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "";
-    }
-
-    
-    public static String readFile2(String filePath) {
-
-        try {
-            FileInputStream f;
-            f = new FileInputStream(filePath);
-
-            ObjectInputStream fileStream;
-            fileStream = new ObjectInputStream(f);
-            System.out.println("PRINTTTTTTTTT"+ fileStream.readObject().toString());
             return (String) fileStream.readObject();
         } catch (EOFException e) {
             System.out.println("\n\nEmpty File \n\n");
@@ -100,5 +90,23 @@ public class FileHandler {
         }
         return "";
     }
-    
+
+
+    public static ArrayList<String> readFile2(String filePath) {
+
+        try {
+            FileInputStream f;
+            f = new FileInputStream(filePath);
+
+            ObjectInputStream fileStream;
+            fileStream = new ObjectInputStream(f);
+            return (ArrayList<String>) fileStream.readObject();
+        } catch (EOFException e) {
+            System.out.println("\n\nEmpty File \n\n");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
