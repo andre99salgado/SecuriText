@@ -47,10 +47,7 @@ public class Controller implements Initializable {
         //TODO: talvez adicionar alguma cena para a chave ser introduzida manualmente
         if (selectedFile != null && selectedKeyFile != null) {
 
-            /////////////////// podiamos fazer função
-            String nome = selectedKeyFile.getName();
-            String[] partes = nome.split("-");
-            String tipo_ficheiro = partes[partes.length - 1];
+            String tipo_ficheiro = getFileType(selectedKeyFile);
             System.out.println("Tipo de Ficheiro:" + tipo_ficheiro);
 
             ///////////////////////////////
@@ -65,8 +62,9 @@ public class Controller implements Initializable {
 
             }
             if (tipo_ficheiro.equals("keyHmac.txt")) {
-                // System.out.println("TOU AQUI");
+
                 AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
+
                 if (authenticateUtils != null) {
 
                     txtAreaTotal.setText(authenticateUtils.getInput());
@@ -87,7 +85,7 @@ public class Controller implements Initializable {
                     if (cipherUtil != null) {
                         txtAreaTotal.setText(cipherUtil.getDecryptedString());
                         txtAreaTotal.requestFocus();
-                    }else{
+                    } else {
                         System.out.println("Nao existe cifrado");
                     }
 
@@ -146,25 +144,17 @@ public class Controller implements Initializable {
 
         String currentHMACPath = selectedHMACFile.getAbsolutePath();
 
-        // Assume-se que, caso não haja o ficheiro de chaves que
-        //txtArea.setText(selectedFile.getName());
-
-        //Abrir lixo
-        System.out.println("tou aqui"+FileHandler.readFile(currentKeyPath));
         AuthenticateUtils authenticateUtils = new AuthenticateUtils(FileHandler.readFile(currentFilePath),
-                FileHandler.readFile2(currentKeyPath).get(1), FileHandler.readFile(currentHMACPath));
+                FileHandler.readFileStringList(currentKeyPath).get(1), FileHandler.readFile(currentHMACPath));
 
         this.currentAuthenticateUtil = authenticateUtils;
 
-        //verificar o hmac
         String texto = currentAuthenticateUtil.getInput();
         String hmac = currentAuthenticateUtil.getHmac();
         String privateKey = currentAuthenticateUtil.getPrivateKey();
 
-        if (currentAuthenticateUtil.verifyHmac(texto, hmac, privateKey)) {
-
+        if (currentAuthenticateUtil.verifyHmac(texto, hmac, privateKey))
             return authenticateUtils;
-        }
 
         return null;
 
@@ -175,14 +165,21 @@ public class Controller implements Initializable {
         currentFilePath = selectedFile.getAbsolutePath();
         String currentKeyPath = selectedKeyFile.getAbsolutePath();
 
-        // Assume-se que, caso não haja o ficheiro de chaves que
-        //txtArea.setText(selectedFile.getName());
         CipherUtil cipherUtil = new CipherUtil(FileHandler.readFile(currentFilePath),
-                FileHandler.readFile2(currentKeyPath).get(0));
+                FileHandler.readFileStringList(currentKeyPath).get(0));
         currentCipherUtil = cipherUtil;
 
         return cipherUtil;
 
+    }
+
+    private String getFileType(File file) {
+        if (file != null) {
+            String nome = file.getName();
+            String[] partes = nome.split("-");
+            return partes[partes.length - 1];
+        }
+        return "";
     }
 
 }

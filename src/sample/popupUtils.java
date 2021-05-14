@@ -20,6 +20,12 @@ import java.util.logging.Logger;
 
 public class popupUtils {
 
+    private static ArrayList<String> keys = new ArrayList<String>();
+    /*
+        keys.get(0) = encrypt key
+        keys.get(1) = rsa private key
+        keys.get(1) = mac
+    */
 
     public static void popup(Stage currentStage, Node... es) {
 
@@ -39,33 +45,49 @@ public class popupUtils {
     }
 
     public static void selectionPopup(Stage currentStage, String text) {
+
+        //action para encriptar o texto e guardar num file
         Button encrypt = new Button("Encrypt");
         encrypt.setOnAction(event -> {
+
+            //encriptar o texto e guardar num file ----
             CipherUtil cipherUtil = new CipherUtil(text);
             File fileSaved = FileHandler.FileChooserAndSave(cipherUtil.getEncryptedString());
-            ArrayList<String> keys = new ArrayList<String>();
+            //----------------------------
+
+            //Guardar as chaves necessárias quando encriptamos o file
+            //ArrayList<String> keys = new ArrayList<String>();
             keys.add(cipherUtil.getKeyAsString());
             FileHandler.writeFileArrayString(keys, Paths.get(fileSaved.getParent(), (fileSaved.getName() + "-key.txt")).toAbsolutePath().toString());
-            //TODO: Deve mostrar outro POPUP a dizer para remover o ficheiro daquele sítio
+            //----------------------------
+
             //Fechar depois de clicar em algum botão
             CloseAndWarn(event);
         });
 
+        //action para autenticar o texto e guardar num file
         Button authenticate = new Button("Authenticate");
         authenticate.setOnAction(event -> {
-            //FAZER
-            AuthenticateUtils authenticateUtils = new AuthenticateUtils(text);
 
             try {
-
+                //Autentica e guarda o texto -----
+                AuthenticateUtils authenticateUtils = new AuthenticateUtils(text);
                 File fileSaved = FileHandler.FileChooserAndSave(text); // ficheiro original
+                //----------------------------
+
+                //Guardar as chaves necessárias quando autenticamos o file -----
                 System.out.println("\nEste é o HMAC:" + authenticateUtils.calculateHMAC(text));
                 System.out.println("\n Esta é a private key " + authenticateUtils.getPrivateKey());
-                ArrayList<String> keys = new ArrayList<String>();
-                keys.add("");
-                keys.add(authenticateUtils.getPrivateKey());
-                FileHandler.writeFileArrayString(keys, Paths.get(fileSaved.getParent(), (fileSaved.getName() + "-keyHmac.txt")).toAbsolutePath().toString()); // ficheiro com chave privada
-                FileHandler.writeFile(authenticateUtils.calculateHMAC(text), Paths.get(fileSaved.getParent(), (fileSaved.getName() + "-hmac.txt")).toAbsolutePath().toString()); // ficheiro com o hmac
+                //ArrayList<String> keys = new ArrayList<String>();
+                keys.add(""); //key.get(0) -> chave de encrypt fica vazia porque só estamos a autenticar o file
+                keys.add(authenticateUtils.getPrivateKey()); // add rsa private key para verificar o mac do file
+
+                FileHandler.writeFileArrayString(keys, Paths.get(fileSaved.getParent(),
+                        (fileSaved.getName() + "-keyHmac.txt")).toAbsolutePath().toString()); // ficheiro com chave privada
+
+                FileHandler.writeFile(authenticateUtils.calculateHMAC(text), Paths.get(fileSaved.getParent(),
+                        (fileSaved.getName() + "-hmac.txt")).toAbsolutePath().toString()); // ficheiro com o hmac
+                //----------------------------
 
             } catch (SignatureException ex) {
                 Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
@@ -76,9 +98,6 @@ public class popupUtils {
             }
 
 
-            ////
-
-            // authenticateUtils.
             CloseAndWarn(event);
         });
 
