@@ -13,6 +13,11 @@ import javafx.stage.Stage;
 
 import java.io.*;
 import java.net.URL;
+import java.nio.file.Paths;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,6 +37,9 @@ public class Controller implements Initializable {
     private CipherUtil currentCipherUtil;
 
     private AuthenticateUtils currentAuthenticateUtil;
+    private File selectedFile = null;
+    private File selectedKeyFile = null;
+    private static KeysUtils keyaux;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -41,8 +49,8 @@ public class Controller implements Initializable {
     @FXML
     private void openFile(ActionEvent event) {
 
-        File selectedFile = FileHandler.FileChooserAndGetFile();
-        File selectedKeyFile = FileHandler.FileChooserAndGetFile();
+        selectedFile = FileHandler.FileChooserAndGetFile();
+        selectedKeyFile = FileHandler.FileChooserAndGetFile();
 
         //TODO: talvez adicionar alguma cena para a chave ser introduzida manualmente
         if (selectedFile != null && selectedKeyFile != null) {
@@ -53,7 +61,7 @@ public class Controller implements Initializable {
             ///////////////////////////////
             if(tipo_ficheiro.equals("keys-and-iv.txt")){
 
-                if (FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath())[1].equals("")) {
+                if (Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[1].equals("")) {
 
                     CipherUtil cipherUtil = verificarDesencriptar(selectedFile, selectedKeyFile);
 
@@ -63,7 +71,7 @@ public class Controller implements Initializable {
                     }
 
                 }
-                if (FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath())[0].equals("")) {
+                if (Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[0].equals("")) {
 
                     AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
 
@@ -77,9 +85,9 @@ public class Controller implements Initializable {
                     }
 
                 }
-                if (!FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath())[0].equals("") &&
-                        !FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath())[1].equals("")&&
-                        !FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath())[2].equals("")) {
+                if (!Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[0].equals("") &&
+                        !Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[1].equals("")&&
+                        !Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[2].equals("")) {
 
                     AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
 
@@ -115,11 +123,65 @@ public class Controller implements Initializable {
             popupUtils.selectionPopup((Stage) txtAreaTotal.getScene().getWindow(), text);
 
         } else { //incompleto -> melhorar , verificar se o ficheiro foi só cifrado , autenticado ou ambos
-            currentCipherUtil.setInput(text);
-            FileHandler.writeFile(currentCipherUtil.getEncryptedString(), currentFilePath);
+            if (selectedFile != null && selectedKeyFile != null){
+
+                String tipo_ficheiro = getFileType(selectedKeyFile);
+                System.out.println("Tipo de Ficheiro:" + tipo_ficheiro);
+
+                if(tipo_ficheiro.equals("keys-and-iv.txt")){
+
+                    if (Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[1].equals("")){
+                        currentCipherUtil.setInput(text);
+                        FileHandler.writeFile(currentCipherUtil.getEncryptedString(), currentFilePath);
+                    }
+
+                    if (Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[0].equals("")){
+                        try {
+                            keyaux = new KeysUtils("", currentAuthenticateUtil.getPrivateKey(), currentAuthenticateUtil.calculateHMAC(text), "");
+                        } catch (SignatureException | NoSuchAlgorithmException | InvalidKeyException e) {
+                            e.printStackTrace();
+                        }
+
+                        FileHandler.writeFileArrayString(keyaux.getKeysF(), selectedKeyFile.getAbsolutePath()); // ficheiro com chave privada
+                        FileHandler.writeFile(text, currentFilePath);
+                    }
+
+                    if(!Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[0].equals("") &&
+                            !Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[1].equals("")&&
+                            !Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[2].equals("")){
+
+                        currentCipherUtil.setInput(text);
+                        FileHandler.writeFile(currentCipherUtil.getEncryptedString(), currentFilePath);
+                        try {
+                            keyaux = new KeysUtils(currentCipherUtil.getKeyAsString(), currentAuthenticateUtil.getPrivateKey(), currentAuthenticateUtil.calculateHMAC(currentCipherUtil.getEncryptedString()), "");
+                        } catch (SignatureException | NoSuchAlgorithmException | InvalidKeyException e) {
+                            e.printStackTrace();
+                        }
+                        FileHandler.writeFileArrayString(keyaux.getKeysF(), selectedKeyFile.getAbsolutePath()); // ficheiro com chave privada
+
+                    }
+
+
+                }
+
+
+
+
+
+            }
+
+
+
         }
 
     }
+
+    @FXML
+    void createFileSaveAs(ActionEvent event){
+        String text = txtAreaTotal.getText();
+        popupUtils.selectionPopup((Stage) txtAreaTotal.getScene().getWindow(), text);
+    }
+
 
     @FXML
     public void newWindow(ActionEvent event) {

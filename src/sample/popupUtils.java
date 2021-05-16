@@ -22,14 +22,7 @@ import java.util.logging.Logger;
 
 public class popupUtils {
 
-    private static String[] keysF = new String[4];
-
-    /*
-        keysF[0] = encrypt key
-        keysF[1] = rsa private key
-        keysF[2] = mac
-        keysF[3] = iv
-    */
+    private static KeysUtils keyaux;
 
     public static void popup(Stage currentStage, Node... es) {
 
@@ -60,8 +53,8 @@ public class popupUtils {
             //----------------------------
 
             //Guardar as chaves necessárias quando encriptamos o file
-            setKeys(cipherUtil.getKeyAsString(), "", "", "");
-            FileHandler.writeFileArrayString(keysF, Paths.get(fileSaved.getParent(), (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString());
+            keyaux = new KeysUtils(cipherUtil.getKeyAsString(), "", "", "");
+            FileHandler.writeFileArrayString(keyaux.getKeysF(), Paths.get(fileSaved.getParent(), (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString());
             //----------------------------
 
             //Fechar depois de clicar em algum botão
@@ -82,8 +75,10 @@ public class popupUtils {
                 System.out.println("\nEste é o HMAC:" + authenticateUtils.calculateHMAC(text));
                 System.out.println("\n Esta é a private key " + authenticateUtils.getPrivateKey());
 
-                setKeys("", authenticateUtils.getPrivateKey(), authenticateUtils.calculateHMAC(text), "");
-                FileHandler.writeFileArrayString(keysF, Paths.get(fileSaved.getParent(),
+                keyaux = new KeysUtils("", authenticateUtils.getPrivateKey(), authenticateUtils.calculateHMAC(text), "");
+
+
+                FileHandler.writeFileArrayString(keyaux.getKeysF(), Paths.get(fileSaved.getParent(),
                         (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString()); // ficheiro com chave privada
                 //----------------------------
 
@@ -115,13 +110,10 @@ public class popupUtils {
             try {
 
                 File fileSaved = FileHandler.FileChooserAndSave(encriptada); // ficheiro encriptado
-                setKeys(cipherUtil.getKeyAsString(), authenticateUtils.getPrivateKey(), authenticateUtils.calculateHMAC(encriptada), "");
-                FileHandler.writeFileArrayString(keysF, Paths.get(fileSaved.getParent(), (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString());
-            } catch (SignatureException ex) {
-                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (NoSuchAlgorithmException ex) {
-                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InvalidKeyException ex) {
+                keyaux = new KeysUtils(cipherUtil.getKeyAsString(), authenticateUtils.getPrivateKey(), authenticateUtils.calculateHMAC(encriptada), "");
+                assert fileSaved != null;
+                FileHandler.writeFileArrayString(keyaux.getKeysF(), Paths.get(fileSaved.getParent(), (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString());
+            } catch (SignatureException | NoSuchAlgorithmException | InvalidKeyException ex) {
                 Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
             }
 
@@ -151,13 +143,6 @@ public class popupUtils {
         okButton.setOnAction(popupUtils::closeFromEvent);
         popup(currentStage, label, okButton);
 
-    }
-
-    private static void setKeys(String encrypt, String privateKey, String mac, String iv){
-        keysF[0]= encrypt;
-        keysF[1]= privateKey;
-        keysF[2]= mac;
-        keysF[3]= iv;
     }
 
     private static String getFileType(String nome) {
