@@ -89,11 +89,7 @@ public class popupUtils {
                         (fileSaved.getName() + "-hmac.txt")).toAbsolutePath().toString()); // ficheiro com o hmac
                 //----------------------------
 
-            } catch (SignatureException ex) {
-                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (NoSuchAlgorithmException ex) {
-                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InvalidKeyException ex) {
+            } catch (SignatureException | InvalidKeyException | NoSuchAlgorithmException ex) {
                 Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
             }
 
@@ -124,14 +120,9 @@ public class popupUtils {
                 //FileHandler.writeFile(authenticateUtils.getPrivateKey(), Paths.get(fileSaved.getParent(), (fileSaved.getName() + "-EncryptKeyPrivateKey.txt")).toAbsolutePath().toString());
                 FileHandler.writeFile(authenticateUtils.calculateHMAC(encriptada), Paths.get(fileSaved.getParent(), (fileSaved.getName() + "-hmac.txt")).toAbsolutePath().toString()); // ficheiro com o hmac
 
-            } catch (SignatureException ex) {
-                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (NoSuchAlgorithmException ex) {
-                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InvalidKeyException ex) {
+            } catch (SignatureException | NoSuchAlgorithmException | InvalidKeyException ex) {
                 Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
             }
-
 
 
             CloseAndWarn(event);
@@ -154,7 +145,7 @@ public class popupUtils {
 
     }
 
-    private static void MessagePopup(Stage currentStage, String message) {
+    public static void MessagePopup(Stage currentStage, String message) {
         Label label = new Label(message);
         Button okButton = new Button("OK");
         okButton.setOnAction(popupUtils::closeFromEvent);
