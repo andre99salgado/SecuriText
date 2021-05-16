@@ -51,49 +51,57 @@ public class Controller implements Initializable {
             System.out.println("Tipo de Ficheiro:" + tipo_ficheiro);
 
             ///////////////////////////////
-            if (tipo_ficheiro.equals("key.txt")) {
+            if(tipo_ficheiro.equals("keys-and-iv.txt")){
 
-                CipherUtil cipherUtil = verificarDesencriptar(selectedFile, selectedKeyFile);
-
-                if (cipherUtil != null) {
-                    txtAreaTotal.setText(cipherUtil.getDecryptedString());
-                    txtAreaTotal.requestFocus();
-                }
-
-            }
-            if (tipo_ficheiro.equals("keyHmac.txt")) {
-
-                AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
-
-                if (authenticateUtils != null) {
-
-                    txtAreaTotal.setText(authenticateUtils.getInput());
-                    txtAreaTotal.requestFocus();
-
-                } else {
-                    System.out.println("Não é o mesmo cuidado!!!!!");
-                }
-
-            }
-            if (tipo_ficheiro.equals("EncryptKeyPrivateKey.txt")) {
-
-                AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
-
-                if (authenticateUtils != null) {
+                if (FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath())[1].equals("")) {
 
                     CipherUtil cipherUtil = verificarDesencriptar(selectedFile, selectedKeyFile);
+
                     if (cipherUtil != null) {
                         txtAreaTotal.setText(cipherUtil.getDecryptedString());
                         txtAreaTotal.requestFocus();
-                    } else {
-                        System.out.println("Nao existe cifrado");
                     }
 
-                } else {
-                    System.out.println("AVISO , NAO É O MESMO!!!!!");
+                }
+                if (FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath())[0].equals("")) {
+
+                    AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
+
+                    if (authenticateUtils != null) {
+
+                        txtAreaTotal.setText(authenticateUtils.getInput());
+                        txtAreaTotal.requestFocus();
+
+                    } else {
+                        System.out.println("Não é o mesmo cuidado!!!!!");
+                    }
+
+                }
+                if (!FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath())[0].equals("") &&
+                        !FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath())[1].equals("")&&
+                        !FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath())[2].equals("")) {
+
+                    AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
+
+                    if (authenticateUtils != null) {
+
+                        CipherUtil cipherUtil = verificarDesencriptar(selectedFile, selectedKeyFile);
+                        if (cipherUtil != null) {
+                            txtAreaTotal.setText(cipherUtil.getDecryptedString());
+                            txtAreaTotal.requestFocus();
+                        } else {
+                            System.out.println("Nao existe cifrado");
+                        }
+
+                    } else {
+                        System.out.println("AVISO , NAO É O MESMO!!!!!");
+                    }
+
                 }
 
             }
+
+
         }
     }
 
@@ -137,15 +145,11 @@ public class Controller implements Initializable {
 
     private AuthenticateUtils verificarHmac(File selectedFile, File selectedKeyFile) {
 
-        File selectedHMACFile = FileHandler.FileChooserAndGetFile();
-
         currentFilePath = selectedFile.getAbsolutePath();
         String currentKeyPath = selectedKeyFile.getAbsolutePath();
 
-        String currentHMACPath = selectedHMACFile.getAbsolutePath();
-
         AuthenticateUtils authenticateUtils = new AuthenticateUtils(FileHandler.readFile(currentFilePath),
-                FileHandler.readFileStringList(currentKeyPath).get(1), FileHandler.readFile(currentHMACPath));
+                FileHandler.readFileStringList(currentKeyPath)[1], FileHandler.readFileStringList(currentKeyPath)[2]);
 
         this.currentAuthenticateUtil = authenticateUtils;
 
@@ -166,7 +170,7 @@ public class Controller implements Initializable {
         String currentKeyPath = selectedKeyFile.getAbsolutePath();
 
         CipherUtil cipherUtil = new CipherUtil(FileHandler.readFile(currentFilePath),
-                FileHandler.readFileStringList(currentKeyPath).get(0));
+                FileHandler.readFileStringList(currentKeyPath)[0]);
         currentCipherUtil = cipherUtil;
 
         return cipherUtil;
@@ -176,7 +180,7 @@ public class Controller implements Initializable {
     private String getFileType(File file) {
         if (file != null) {
             String nome = file.getName();
-            String[] partes = nome.split("-");
+            String[] partes = nome.split("_");
             return partes[partes.length - 1];
         }
         return "";

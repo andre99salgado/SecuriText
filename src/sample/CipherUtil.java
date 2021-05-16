@@ -15,9 +15,9 @@ import java.util.Base64;
 //TODO: Bibliografia/Credits https://www.baeldung.com/java-aes-encryption-decryption
 public class CipherUtil {
 
-    private static final byte[] ivBytes = {72, 101, 108, 108, 111, 32, 63, 13, 127, 63, 62, 33, 72, 101, 108, 108};
+    private static byte[] ivBytes;
     //TODO: remover ou deixar estar,porque IV pode ser público
-    private static final IvParameterSpec iv = new IvParameterSpec(ivBytes);
+    private static IvParameterSpec iv = null;
     private static final String algorithm = "AES/CTR/NoPadding";
 
     private String input;
@@ -32,12 +32,15 @@ public class CipherUtil {
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
+        iv = generateIv();
+        ivBytes = iv.getIV();
     }
 
     // Usado quando se abre um ficheiro e a key do ficheiro
     public CipherUtil(String input, String key) {
         this.input = input;
         this.key = StringToSecretKey(Base64.getDecoder().decode(key));
+        iv = new IvParameterSpec(ivBytes);
     }
 
     //Devolve chave como string (para gravar)
