@@ -56,48 +56,19 @@ public class Controller implements Initializable {
         if (selectedFile != null && selectedKeyFile != null) {
 
             String tipo_ficheiro = getFileType(selectedKeyFile);
+            String[] fileStringList = Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()));
 
             ///////////////////////////////
-            if(tipo_ficheiro.equals("keys-and-iv.txt")){
-
-                if (Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[1].equals("")) {
-
-                    CipherUtil cipherUtil = verificarDesencriptar(selectedFile, selectedKeyFile);
-
-                    if (cipherUtil != null) {
-                        txtAreaTotal.setText(cipherUtil.getDecryptedString());
-                        txtAreaTotal.requestFocus();
-                    }
-
-                }
-                if (Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[0].equals("")) {
-
-                    AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
-
-                    if (authenticateUtils != null) {
-
-                        txtAreaTotal.setText(authenticateUtils.getInput());
-                        txtAreaTotal.requestFocus();
-
-                    } else {
-                        System.out.println("Não é o mesmo cuidado!!!!!");
-                    }
-
-
-                } else {
-                    popupUtils.MessagePopup((Stage) txtAreaTotal.getScene().getWindow(), "Warning! Failed to " +
-                            "Authenticate this file.");
-                }
-                if (!Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[0].equals("") &&
-                        !Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[1].equals("")&&
-                        !Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[2].equals("")) {
+            if (tipo_ficheiro.equals("keys-and-iv.txt")) {
+                //Se está encriptado e autenticado
+                if (!fileStringList[0].equals("") && !fileStringList[1].equals("") && !fileStringList[2].equals("") && !fileStringList[3].equals("")) {
 
                     AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
 
                     if (authenticateUtils != null) {
 
                         CipherUtil cipherUtil = verificarDesencriptar(selectedFile, selectedKeyFile);
-                        if (cipherUtil != null) {
+                        if (cipherUtil.getDecryptedString() != null) {
                             txtAreaTotal.setText(cipherUtil.getDecryptedString());
                             txtAreaTotal.requestFocus();
                         } else {
@@ -109,15 +80,45 @@ public class Controller implements Initializable {
                         popupUtils.MessagePopup((Stage) txtAreaTotal.getScene().getWindow(), "Warning! Encrypted" +
                                 "Doesn't Exist!");
                     }
+                    return;
+
+                }
+                //Se está encriptado mas não está autenticado
+                if (fileStringList[1].equals("") && !fileStringList[0].equals("")) {
+
+                    CipherUtil cipherUtil = verificarDesencriptar(selectedFile, selectedKeyFile);
+
+                    if (cipherUtil.getDecryptedString() != null) {
+                        txtAreaTotal.setText(cipherUtil.getDecryptedString());
+                        txtAreaTotal.requestFocus();
+                    } else {
+                        popupUtils.MessagePopup((Stage) txtAreaTotal.getScene().getWindow(), "Warning! Failed to " +
+                                "Decipher this file.");
+                    }
+                    return;
+
+                }
+                //Se está autenticado mas não está encriptado
+                if (fileStringList[0].equals("") && !fileStringList[1].equals("")) {
+
+                    AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
+
+                    if (authenticateUtils != null) {
+
+                        txtAreaTotal.setText(authenticateUtils.getInput());
+                        txtAreaTotal.requestFocus();
+
+                    } else {
+                        popupUtils.MessagePopup((Stage) txtAreaTotal.getScene().getWindow(), "Warning! Failed to " +
+                                "Authenticate this file.");
+                    }
 
                 } else {
                     popupUtils.MessagePopup((Stage) txtAreaTotal.getScene().getWindow(), "Warning! Failed to " +
                             "Authenticate this file.");
+
                 }
-
             }
-
-
         }
     }
 
@@ -137,19 +138,19 @@ public class Controller implements Initializable {
             popupUtils.selectionPopup((Stage) txtAreaTotal.getScene().getWindow(), text);
 
         } else { //incompleto -> melhorar , verificar se o ficheiro foi só cifrado , autenticado ou ambos
-            if (selectedFile != null && selectedKeyFile != null){
+            if (selectedFile != null && selectedKeyFile != null) {
 
                 String tipo_ficheiro = getFileType(selectedKeyFile);
                 System.out.println("Tipo de Ficheiro:" + tipo_ficheiro);
 
-                if(tipo_ficheiro.equals("keys-and-iv.txt")){
+                if (tipo_ficheiro.equals("keys-and-iv.txt")) {
 
-                    if (Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[1].equals("")){
+                    if (Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[1].equals("")) {
                         currentCipherUtil.setInput(text);
                         FileHandler.writeFile(currentCipherUtil.getEncryptedString(), currentFilePath);
                     }
 
-                    if (Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[0].equals("")){
+                    if (Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[0].equals("")) {
                         try {
                             keyaux = new KeysUtils("", currentAuthenticateUtil.getPrivateKey(), currentAuthenticateUtil.calculateHMAC(text), "");
                         } catch (SignatureException | NoSuchAlgorithmException | InvalidKeyException e) {
@@ -160,14 +161,14 @@ public class Controller implements Initializable {
                         FileHandler.writeFile(text, currentFilePath);
                     }
 
-                    if(!Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[0].equals("") &&
-                            !Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[1].equals("")&&
-                            !Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[2].equals("")){
+                    if (!Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[0].equals("") &&
+                            !Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[1].equals("") &&
+                            !Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[2].equals("")) {
 
                         currentCipherUtil.setInput(text);
                         FileHandler.writeFile(currentCipherUtil.getEncryptedString(), currentFilePath);
                         try {
-                            keyaux = new KeysUtils(currentCipherUtil.getKeyAsString(), currentAuthenticateUtil.getPrivateKey(), currentAuthenticateUtil.calculateHMAC(currentCipherUtil.getEncryptedString()), "");
+                            keyaux = new KeysUtils(currentCipherUtil.getKeyAsString(), currentAuthenticateUtil.getPrivateKey(), currentAuthenticateUtil.calculateHMAC(currentCipherUtil.getEncryptedString()), currentCipherUtil.getIvBytesAsString());
                         } catch (SignatureException | NoSuchAlgorithmException | InvalidKeyException e) {
                             e.printStackTrace();
                         }
@@ -179,11 +180,7 @@ public class Controller implements Initializable {
                 }
 
 
-
-
-
             }
-
 
 
         }
@@ -199,8 +196,7 @@ public class Controller implements Initializable {
         String text = txtAreaTotal.getText();
         popupUtils.selectionPopup((Stage) txtAreaTotal.getScene().getWindow(), text);
     }
-    
-    
+
     @FXML
     void generateKeyPair(ActionEvent event) {
          popupUtils.RSAKeys((Stage) txtAreaTotal.getScene().getWindow());
@@ -220,6 +216,7 @@ public class Controller implements Initializable {
         String text = txtAreaTotal.getText();
         popupUtils.selectionPopup((Stage) txtAreaTotal.getScene().getWindow(), text);
     }
+
 
 
     @FXML
@@ -271,9 +268,9 @@ public class Controller implements Initializable {
 
         currentFilePath = selectedFile.getAbsolutePath();
         String currentKeyPath = selectedKeyFile.getAbsolutePath();
-
-        CipherUtil cipherUtil = new CipherUtil(FileHandler.readFile(currentFilePath),
-                FileHandler.readFileStringList(currentKeyPath)[0]);
+        String input = FileHandler.readFile(currentFilePath);
+        String[] keyValues = FileHandler.readFileStringList(currentKeyPath);
+        CipherUtil cipherUtil = new CipherUtil(input, keyValues[0], CipherUtil.getStringAsIv(keyValues[3]));
         currentCipherUtil = cipherUtil;
 
         return cipherUtil;

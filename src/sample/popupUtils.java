@@ -55,7 +55,7 @@ public class popupUtils {
             //----------------------------
 
             //Guardar as chaves necessárias quando encriptamos o file
-            keyaux = new KeysUtils(cipherUtil.getKeyAsString(), "", "", "");
+            keyaux = new KeysUtils(cipherUtil.getKeyAsString(), "", "", cipherUtil.getIvBytesAsString());
             FileHandler.writeFileArrayString(keyaux.getKeysF(), Paths.get(fileSaved.getParent(), (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString());
             //----------------------------
 
@@ -88,7 +88,7 @@ public class popupUtils {
 
                 File fileSaved = FileHandler.FileChooserAndSave(encriptada); // ficheiro encriptado
 
-                keyaux = new KeysUtils(cipherUtil.getKeyAsString(), authenticateUtils.getPrivateKey(), authenticateUtils.calculateHMAC(encriptada), "");
+                keyaux = new KeysUtils(cipherUtil.getKeyAsString(), authenticateUtils.getPrivateKey(), authenticateUtils.calculateHMAC(encriptada), cipherUtil.getIvBytesAsString());
                 assert fileSaved != null;
                 FileHandler.writeFileArrayString(keyaux.getKeysF(), Paths.get(fileSaved.getParent(), (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString());
 
