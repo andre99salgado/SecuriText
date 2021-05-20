@@ -37,20 +37,22 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="anchorid" prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/16"
-      xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+<VBox fx:id="anchorid" prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+
     <children>
         <MenuBar VBox.vgrow="NEVER">
             <menus>
                 <Menu mnemonicParsing="false" text="File">
                     <items>
-                        <MenuItem mnemonicParsing="false" onAction="#newWindow" text="New"/>
-                        <MenuItem mnemonicParsing="false" onAction="#openFile" text="Open…"/>
-                        <SeparatorMenuItem mnemonicParsing="false"/>
-                        <MenuItem mnemonicParsing="false" onAction="#saveButtonControl" text="Save"/>
-                        <MenuItem mnemonicParsing="false" onAction="#saveAsButtonControl" text="Save As..."/>
-                        <SeparatorMenuItem mnemonicParsing="false"/>
-                        <MenuItem mnemonicParsing="false" onAction="#closeButtonAction" text="Quit"/>
+
+                        <MenuItem mnemonicParsing="false" onAction="#newWindow" text="New" />
+                        <MenuItem mnemonicParsing="false" onAction="#openFile" text="Open…" />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" onAction="#createFile" text="Save" />
+                  <MenuItem mnemonicParsing="false" onAction="#createFileSaveAs" text="Save As..." />
+                        <SeparatorMenuItem mnemonicParsing="false" />
+                        <MenuItem mnemonicParsing="false" onAction="#closeButtonAction" text="Quit" />
+
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Edit">
