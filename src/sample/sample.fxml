@@ -38,11 +38,13 @@
 <?import javafx.scene.layout.VBox?>
 
 <VBox fx:id="anchorid" prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+
     <children>
         <MenuBar VBox.vgrow="NEVER">
             <menus>
                 <Menu mnemonicParsing="false" text="File">
                     <items>
+
                         <MenuItem mnemonicParsing="false" onAction="#newWindow" text="New" />
                         <MenuItem mnemonicParsing="false" onAction="#openFile" text="Open…" />
                         <SeparatorMenuItem mnemonicParsing="false" />
@@ -50,47 +52,49 @@
                   <MenuItem mnemonicParsing="false" onAction="#createFileSaveAs" text="Save As..." />
                         <SeparatorMenuItem mnemonicParsing="false" />
                         <MenuItem mnemonicParsing="false" onAction="#closeButtonAction" text="Quit" />
+
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Edit">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="Undo" />
-                        <MenuItem mnemonicParsing="false" text="Redo" />
-                        <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" text="Cut" />
-                        <MenuItem mnemonicParsing="false" text="Copy" />
-                        <MenuItem mnemonicParsing="false" text="Paste" />
-                        <MenuItem mnemonicParsing="false" text="Delete" />
-                        <SeparatorMenuItem mnemonicParsing="false" />
-                        <MenuItem mnemonicParsing="false" text="Select All" />
-                        <MenuItem mnemonicParsing="false" text="Unselect All" />
+                        <MenuItem mnemonicParsing="false" text="Undo"/>
+                        <MenuItem mnemonicParsing="false" text="Redo"/>
+                        <SeparatorMenuItem mnemonicParsing="false"/>
+                        <MenuItem mnemonicParsing="false" text="Cut"/>
+                        <MenuItem mnemonicParsing="false" text="Copy"/>
+                        <MenuItem mnemonicParsing="false" text="Paste"/>
+                        <MenuItem mnemonicParsing="false" text="Delete"/>
+                        <SeparatorMenuItem mnemonicParsing="false"/>
+                        <MenuItem mnemonicParsing="false" text="Select All"/>
+                        <MenuItem mnemonicParsing="false" text="Unselect All"/>
                     </items>
                 </Menu>
                 <Menu mnemonicParsing="false" text="Help">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="About MyHelloApp" />
+                        <MenuItem mnemonicParsing="false" text="About MyHelloApp"/>
                     </items>
                 </Menu>
             </menus>
         </MenuBar>
         <AnchorPane maxHeight="-1.0" maxWidth="-1.0" prefHeight="-1.0" prefWidth="-1.0" VBox.vgrow="ALWAYS">
             <children>
-                <TextArea fx:id="txtAreaTotal" prefHeight="375.0" prefWidth="640.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+                <TextArea fx:id="txtAreaTotal" prefHeight="375.0" prefWidth="640.0" AnchorPane.bottomAnchor="0.0"
+                          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0"/>
             </children>
         </AnchorPane>
-      <MenuBar>
-        <menus>
-          <Menu mnemonicParsing="false">
-               <graphic>
-                  <Label text="Palavras:0" />
-               </graphic>
-          </Menu>
-          <Menu mnemonicParsing="false">
-               <graphic>
-                  <Label text="Linhas:0" />
-               </graphic>
-          </Menu>
-        </menus>
-      </MenuBar>
+        <MenuBar>
+            <menus>
+                <Menu mnemonicParsing="false">
+                    <graphic>
+                        <Label text="Palavras:0"/>
+                    </graphic>
+                </Menu>
+                <Menu mnemonicParsing="false">
+                    <graphic>
+                        <Label text="Linhas:0"/>
+                    </graphic>
+                </Menu>
+            </menus>
+        </MenuBar>
     </children>
 </VBox>

@@ -82,11 +82,7 @@ public class popupUtils {
                         (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString()); // ficheiro com chave privada
                 //----------------------------
 
-            } catch (SignatureException ex) {
-                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (NoSuchAlgorithmException ex) {
-                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InvalidKeyException ex) {
+            } catch (SignatureException | InvalidKeyException | NoSuchAlgorithmException ex) {
                 Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
             }
 
@@ -110,13 +106,14 @@ public class popupUtils {
             try {
 
                 File fileSaved = FileHandler.FileChooserAndSave(encriptada); // ficheiro encriptado
+
                 keyaux = new KeysUtils(cipherUtil.getKeyAsString(), authenticateUtils.getPrivateKey(), authenticateUtils.calculateHMAC(encriptada), "");
                 assert fileSaved != null;
                 FileHandler.writeFileArrayString(keyaux.getKeysF(), Paths.get(fileSaved.getParent(), (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString());
+
             } catch (SignatureException | NoSuchAlgorithmException | InvalidKeyException ex) {
                 Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
             }
-
             CloseAndWarn(event);
         });
 
@@ -137,7 +134,7 @@ public class popupUtils {
 
     }
 
-    private static void MessagePopup(Stage currentStage, String message) {
+    public static void MessagePopup(Stage currentStage, String message) {
         Label label = new Label(message);
         Button okButton = new Button("OK");
         okButton.setOnAction(popupUtils::closeFromEvent);

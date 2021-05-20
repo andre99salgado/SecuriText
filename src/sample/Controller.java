@@ -56,7 +56,6 @@ public class Controller implements Initializable {
         if (selectedFile != null && selectedKeyFile != null) {
 
             String tipo_ficheiro = getFileType(selectedKeyFile);
-            System.out.println("Tipo de Ficheiro:" + tipo_ficheiro);
 
             ///////////////////////////////
             if(tipo_ficheiro.equals("keys-and-iv.txt")){
@@ -84,6 +83,10 @@ public class Controller implements Initializable {
                         System.out.println("Não é o mesmo cuidado!!!!!");
                     }
 
+
+                } else {
+                    popupUtils.MessagePopup((Stage) txtAreaTotal.getScene().getWindow(), "Warning! Failed to " +
+                            "Authenticate this file.");
                 }
                 if (!Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[0].equals("") &&
                         !Objects.requireNonNull(FileHandler.readFileStringList(selectedKeyFile.getAbsolutePath()))[1].equals("")&&
@@ -102,9 +105,14 @@ public class Controller implements Initializable {
                         }
 
                     } else {
-                        System.out.println("AVISO , NAO É O MESMO!!!!!");
+
+                        popupUtils.MessagePopup((Stage) txtAreaTotal.getScene().getWindow(), "Warning! Encrypted" +
+                                "Doesn't Exist!");
                     }
 
+                } else {
+                    popupUtils.MessagePopup((Stage) txtAreaTotal.getScene().getWindow(), "Warning! Failed to " +
+                            "Authenticate this file.");
                 }
 
             }
@@ -113,12 +121,18 @@ public class Controller implements Initializable {
         }
     }
 
-    ///// GANDA CONFUSÃO !!!!!!!!!!!!!!!!!!!!!!!!
+    /*
+        Button "Save"
+
+
+        Verifica se algum ficheiro já foi aberto (currentFilePath.equals(""))
+        Caso o ficheiro ainda não foi aberto: abre um PopUp para se escolher as operações a fazer no ficheiro (encrypt, auth, both)
+        Caso contrário: Grava o ficheiro com a mesma chave mas com conteúdo diferente
+     */
     @FXML
-    void createFile(ActionEvent event) {
-        //Se não foi aberto usando o Open
+    void saveButtonControl(ActionEvent event) {
         String text = txtAreaTotal.getText();
-        // Se o ficheiro ainda não existir
+
         if (currentFilePath.equals("")) {
             popupUtils.selectionPopup((Stage) txtAreaTotal.getScene().getWindow(), text);
 
@@ -176,6 +190,16 @@ public class Controller implements Initializable {
 
     }
 
+    /*
+        Button "Save As"
+        abre um PopUp para se escolher as operações a fazer no ficheiro (encrypt, auth, both)
+     */
+    @FXML
+    void saveAsButtonControl(ActionEvent event) {
+        String text = txtAreaTotal.getText();
+        popupUtils.selectionPopup((Stage) txtAreaTotal.getScene().getWindow(), text);
+    }
+
     @FXML
     void createFileSaveAs(ActionEvent event){
         String text = txtAreaTotal.getText();
@@ -205,6 +229,7 @@ public class Controller implements Initializable {
         System.exit(0);
     }
 
+    //TODO: Mudar para o ficheiro AuthenticateUtils
     private AuthenticateUtils verificarHmac(File selectedFile, File selectedKeyFile) {
 
         currentFilePath = selectedFile.getAbsolutePath();
@@ -226,6 +251,7 @@ public class Controller implements Initializable {
 
     }
 
+    //TODO: Mudar para o ficheiro CipherUtils
     private CipherUtil verificarDesencriptar(File selectedFile, File selectedKeyFile) {
 
         currentFilePath = selectedFile.getAbsolutePath();
@@ -239,6 +265,7 @@ public class Controller implements Initializable {
 
     }
 
+    //TODO: Mudar para o ficheiro FileHandler
     private String getFileType(File file) {
         if (file != null) {
             String nome = file.getName();
