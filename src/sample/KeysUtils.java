@@ -1,5 +1,7 @@
 package sample;
 
+import java.util.Arrays;
+
 public class KeysUtils {
 
     private String[] keysF = new String[4];
@@ -13,17 +15,18 @@ public class KeysUtils {
 
 
     public KeysUtils(String encrypt, String privateKey, String mac, String iv) {
-        keysF[0]= encrypt;
-        keysF[1]= privateKey;
-        keysF[2]= mac;
-        keysF[3]= iv;
+        keysF[0] = encrypt;
+        keysF[1] = privateKey;
+        keysF[2] = mac;
+        keysF[3] = iv;
+        System.out.printf("Key> " + Arrays.toString(keysF));
     }
 
-    public void setKeys(String encrypt, String privateKey, String mac, String iv){
-        keysF[0]= encrypt;
-        keysF[1]= privateKey;
-        keysF[2]= mac;
-        keysF[3]= iv;
+    public void setKeys(String encrypt, String privateKey, String mac, String iv) {
+        keysF[0] = encrypt;
+        keysF[1] = privateKey;
+        keysF[2] = mac;
+        keysF[3] = iv;
     }
 
     public String[] getKeysF() {

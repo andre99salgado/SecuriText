@@ -15,9 +15,9 @@ import java.util.Base64;
 //TODO: Bibliografia/Credits https://www.baeldung.com/java-aes-encryption-decryption
 public class CipherUtil {
 
-    private static byte[] ivBytes;
+    private byte[] ivBytes;
     //TODO: remover ou deixar estar,porque IV pode ser público
-    private static IvParameterSpec iv = null;
+    private IvParameterSpec iv = null;
     private static final String algorithm = "AES/CTR/NoPadding";
 
     private String input;
@@ -34,13 +34,28 @@ public class CipherUtil {
         }
         iv = generateIv();
         ivBytes = iv.getIV();
+        System.out.println(getIvBytesAsString());
     }
 
     // Usado quando se abre um ficheiro e a key do ficheiro
-    public CipherUtil(String input, String key) {
+    public CipherUtil(String input, String key, byte[] ivBytesInput) {
         this.input = input;
         this.key = StringToSecretKey(Base64.getDecoder().decode(key));
-        iv = new IvParameterSpec(ivBytes);
+        this.ivBytes = ivBytesInput;
+        iv = new IvParameterSpec(ivBytesInput);
+        System.out.println(getIvBytesAsString());
+    }
+
+    public byte[] getIvBytes() {
+        return ivBytes;
+    }
+
+    public String getIvBytesAsString() {
+        return Base64.getEncoder().encodeToString(ivBytes);
+    }
+
+    public static byte[] getStringAsIv(String s) {
+        return Base64.getDecoder().decode(s);
     }
 
     //Devolve chave como string (para gravar)
@@ -54,12 +69,12 @@ public class CipherUtil {
 
     //Devolve string cifrada
     public String getEncryptedString() {
-        return encrypt(algorithm, this.input, this.key);
+        return encrypt(algorithm, this.input, this.key, this.iv);
     }
 
     //Devolve string decifrada
     public String getDecryptedString() {
-        return decrypt(algorithm, this.input, this.key);
+        return decrypt(algorithm, this.input, this.key, this.iv);
     }
 
     public static SecretKey generateKey(int n) throws NoSuchAlgorithmException {
@@ -76,7 +91,7 @@ public class CipherUtil {
     }
 
 
-    public static String encrypt(String algorithm, String input, SecretKey key) {
+    public static String encrypt(String algorithm, String input, SecretKey key, IvParameterSpec iv) {
 
 
         byte[] cipherText = null;
@@ -92,7 +107,7 @@ public class CipherUtil {
                 .encodeToString(cipherText);
     }
 
-    public static String decrypt(String algorithm, String cipherText, SecretKey key) {
+    public static String decrypt(String algorithm, String cipherText, SecretKey key, IvParameterSpec iv) {
 
         byte[] plainText = null;
         try {
