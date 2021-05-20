@@ -197,6 +197,27 @@ public class Controller implements Initializable {
         popupUtils.selectionPopup((Stage) txtAreaTotal.getScene().getWindow(), text);
     }
 
+    @FXML
+    void generateKeyPair(ActionEvent event) {
+         popupUtils.RSAKeys((Stage) txtAreaTotal.getScene().getWindow());
+    }
+    
+    
+    /*
+    @FXML
+    void setKeyPair(ActionEvent event,String text) {
+         popupUtils.insertKeys((Stage) txtAreaTotal.getScene().getWindow(),text);
+    }
+    */
+    
+    
+    @FXML
+    void createFileSaveAs(ActionEvent event){
+        String text = txtAreaTotal.getText();
+        popupUtils.selectionPopup((Stage) txtAreaTotal.getScene().getWindow(), text);
+    }
+
+
 
     @FXML
     public void newWindow(ActionEvent event) {

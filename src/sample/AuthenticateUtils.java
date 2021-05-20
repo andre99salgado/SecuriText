@@ -2,6 +2,10 @@ package sample;
 
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Formatter;
 import java.util.logging.Level;
@@ -35,7 +39,35 @@ public class AuthenticateUtils {
         this.privateKey = key;
         this.hmac = hmac;
     }
+    
+    
+    public AuthenticateUtils() {
+        keyPair = getKeyPair();
+        privateKey = PrivateKeyToString(keyPair.getPrivate());
+        publicKey = PublicKeyToString(keyPair.getPublic());
+    }
 
+    
+    public AuthenticateUtils(String p,String text, String privateKey, String publicKey) throws InvalidKeySpecException{
+        this.input=text;
+        this.privateKey=privateKey;
+        this.publicKey=publicKey;
+        try {
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            PKCS8EncodedKeySpec keySpecPKCS8 = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKey));
+            PrivateKey privKey = kf.generatePrivate(keySpecPKCS8);
+            X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKey));
+            RSAPublicKey pubKey = (RSAPublicKey) kf.generatePublic(keySpecX509);
+    
+            this.keyPair = new KeyPair(pubKey, privKey);
+
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(AuthenticateUtils.class.getName()).log(Level.SEVERE, null, ex);
+            //TODO:Adicionar popup
+        }
+    }
+
+    
 
     public String getSignedText() {
         try {
@@ -47,7 +79,7 @@ public class AuthenticateUtils {
     }
 
 
-    public static String sign(String plainText, PrivateKey privateKey) throws Exception {
+    public String sign(String plainText, PrivateKey privateKey) throws Exception {
         Signature privateSignature = Signature.getInstance("SHA256withRSA");
         privateSignature.initSign(privateKey);
         privateSignature.update(plainText.getBytes(StandardCharsets.UTF_8));
@@ -169,5 +201,9 @@ public class AuthenticateUtils {
     public static String PublicKeyToString(PublicKey publicKey) {
         return Base64.getEncoder().encodeToString(publicKey.getEncoded());
     }
+    
+    
+    
+    
 
 }

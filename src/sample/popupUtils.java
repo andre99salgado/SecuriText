@@ -15,15 +15,17 @@ import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.scene.control.TextArea;
 
 public class popupUtils {
 
     private static KeysUtils keyaux;
-
+    
     public static void popup(Stage currentStage, Node... es) {
 
         currentStage.setTitle("Popup Example");
@@ -65,28 +67,7 @@ public class popupUtils {
         Button authenticate = new Button("Authenticate");
         authenticate.setOnAction(event -> {
 
-            try {
-                //Autentica e guarda o texto -----
-                AuthenticateUtils authenticateUtils = new AuthenticateUtils(text);
-                File fileSaved = FileHandler.FileChooserAndSave(text); // ficheiro original
-                //----------------------------
-
-                //Guardar as chaves necessárias quando autenticamos o file -----
-                System.out.println("\nEste é o HMAC:" + authenticateUtils.calculateHMAC(text));
-                System.out.println("\n Esta é a private key " + authenticateUtils.getPrivateKey());
-
-                keyaux = new KeysUtils("", authenticateUtils.getPrivateKey(), authenticateUtils.calculateHMAC(text), "");
-
-
-                FileHandler.writeFileArrayString(keyaux.getKeysF(), Paths.get(fileSaved.getParent(),
-                        (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString()); // ficheiro com chave privada
-                //----------------------------
-
-            } catch (SignatureException | InvalidKeyException | NoSuchAlgorithmException ex) {
-                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-
+            insertKeys(currentStage,text);            
             CloseAndWarn(event);
         });
 
@@ -142,6 +123,136 @@ public class popupUtils {
 
     }
 
+    
+    public static void RSAKeys(Stage currentStage) {
+        Label label = new Label("Do you wish to Generate a public and a private key?");
+        Button okButton = new Button("YES");
+        okButton.setOnAction((event) -> {
+            ShowKeys(event);
+            closeFromEvent(event);
+        });
+        Button noButton = new Button("NO");
+        noButton.setOnAction(popupUtils::closeFromEvent);
+        popup(currentStage, label, okButton, noButton);
+    }
+    
+    
+     public static void insertKeys(Stage currentStage, String text) {
+        Label labelS = new Label("Insert your private key");
+        TextArea insertS = new TextArea();
+        Label labelP = new Label("Insert your public key");
+        TextArea insertP = new TextArea();
+        Button okButton = new Button("OK");
+        
+       insertS.setPrefColumnCount(3);
+       insertP.setPrefColumnCount(3);
+       insertS.setPrefRowCount(1);
+       insertP.setPrefRowCount(1);
+        
+
+        okButton.setOnAction((event) -> {
+            String privateString = insertS.getText();
+            String publicString = insertP.getText();
+            HmacOrSign(currentStage,text,privateString,publicString);
+            closeFromEvent(event);
+        });
+        Button generateButton = new Button("Generate Keys");
+        generateButton.setOnAction((event) -> {
+            ShowKeys(event);
+        });
+        
+        popup(currentStage, labelS,insertS, labelP, insertP, okButton, generateButton);
+    }
+    
+     
+     
+      public static void HmacOrSign(Stage currentStage, String text,String privateString, String publicString) {
+        Label label = new Label("Authenticate With Hmac or Sign");
+        Button hmac = new Button("HMAC");
+        hmac.setOnAction((event) -> {
+             try {
+                //Autentica e guarda o texto -----
+                AuthenticateUtils authenticateUtils = new AuthenticateUtils("",text,privateString,publicString);
+
+                File fileSaved = FileHandler.FileChooserAndSave(text); // ficheiro original
+                //----------------------------
+                //Guardar as chaves necessárias quando autenticamos o file -----
+                keyaux = new KeysUtils("", authenticateUtils.getPrivateKey(), authenticateUtils.calculateHMAC(text), "");
+                FileHandler.writeFileArrayString(keyaux.getKeysF(), Paths.get(fileSaved.getParent(),
+                        (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString()); // ficheiro com chave privada
+                //----------------------------
+
+            } catch (SignatureException | InvalidKeyException | NoSuchAlgorithmException ex) {
+                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (InvalidKeySpecException ex) {
+                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            closeFromEvent(event);
+        });
+        
+        Button sign = new Button("SIGN");
+        sign.setOnAction((event) -> {
+            
+               AuthenticateUtils authenticateUtils;
+            try {
+                authenticateUtils = new AuthenticateUtils("",text,privateString,publicString);
+
+               //_______________________________________________________________
+               
+               File fileSaved = FileHandler.FileChooserAndSave(text); // ficheiro original
+                //----------------------------
+                //Guardar as chaves necessárias quando autenticamos o file -----
+                keyaux = new KeysUtils("", authenticateUtils.getPrivateKey(), authenticateUtils.getSignedText(), "");
+                FileHandler.writeFileArrayString(keyaux.getKeysF(), Paths.get(fileSaved.getParent(),
+                        (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString()); // ficheiro com chave privada
+               
+                System.out.println("Texto assinado" + authenticateUtils.getSignedText());
+                
+                } catch (InvalidKeySpecException ex) {
+                Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
+            }
+               //_______________________________________________________________
+            
+            closeFromEvent(event);
+        });
+        popup(currentStage, label, hmac, sign);
+    }
+     
+    
+    
+    
+    public static void ShowKeys(ActionEvent event) {
+        
+       AuthenticateUtils authentic = new AuthenticateUtils();
+       authentic.getPrivateKey();
+       System.out.println("ESTOU AQUI" +  authentic.getPrivateKey());
+       authentic.getPublicKey();
+       //String public =  authentic.getPublicKey();
+       
+       
+       Label label1 = new Label ("Private Key");
+       TextArea s = new TextArea(authentic.getPrivateKey());
+       Label label2 = new Label ("Public Key");
+       TextArea p = new TextArea(authentic.getPublicKey());
+       
+       s.setEditable(false);
+       p.setEditable(false);
+       s.setPrefColumnCount(3);
+       p.setPrefColumnCount(3);
+       s.setPrefRowCount(1);
+       p.setPrefRowCount(1);
+
+       
+       Button close = new Button("Close");
+       close.setOnAction(popupUtils::closeFromEvent);
+
+       Node source = (Node) event.getSource();
+       Stage stage = (Stage) source.getScene().getWindow();
+       popup(stage,label1,s,label2,p,close);
+    }
+    
+    
+    
     private static String getFileType(String nome) {
         System.out.println(nome);
         if (nome != null) {
