@@ -24,6 +24,7 @@ public class AuthenticateUtils {
     private String privateKey;
     private String publicKey;
     private String hmac;
+    private String signedtext;
 
     public AuthenticateUtils(String input) {
         this.input = input;
@@ -39,8 +40,13 @@ public class AuthenticateUtils {
         this.privateKey = key;
         this.hmac = hmac;
     }
-    
-    
+
+    public AuthenticateUtils(String input, String publicKey, String signedtext, String nada, String nada2) {
+        this.input = input;
+        this.publicKey = publicKey;
+        this.signedtext = signedtext;
+    }
+
     public AuthenticateUtils() {
         keyPair = getKeyPair();
         privateKey = PrivateKeyToString(keyPair.getPrivate());
@@ -89,9 +95,13 @@ public class AuthenticateUtils {
         return Base64.getEncoder().encodeToString(signature);
     }
 
-    public static boolean verify(String plainText, String signature, PublicKey publicKey) throws Exception {
+    public boolean verify(String plainText, String signature, String publicKey) throws Exception {
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKey));
+        RSAPublicKey pubKey = (RSAPublicKey) kf.generatePublic(keySpecX509);
+
         Signature publicSignature = Signature.getInstance("SHA256withRSA");
-        publicSignature.initVerify(publicKey);
+        publicSignature.initVerify(pubKey);
         publicSignature.update(plainText.getBytes(StandardCharsets.UTF_8));
 
         byte[] signatureBytes = Base64.getDecoder().decode(signature);
@@ -201,9 +211,13 @@ public class AuthenticateUtils {
     public static String PublicKeyToString(PublicKey publicKey) {
         return Base64.getEncoder().encodeToString(publicKey.getEncoded());
     }
-    
-    
-    
-    
 
+
+    public String getSignedtext() {
+        return signedtext;
+    }
+
+    public void setSignedtext(String signedtext) {
+        this.signedtext = signedtext;
+    }
 }

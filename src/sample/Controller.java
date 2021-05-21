@@ -61,8 +61,15 @@ public class Controller implements Initializable {
             ///////////////////////////////
             if (tipo_ficheiro.equals("keys-and-iv.txt")) {
                 //Se está encriptado e autenticado
-                if (!fileStringList[0].equals("") && !fileStringList[1].equals("") && !fileStringList[2].equals("") && !fileStringList[3].equals("")) {
 
+
+                System.out.println("oii ");
+                OperationType operation = Operations.chooseOperation(!fileStringList[0].equals(""), !fileStringList[1].equals(""),
+                        !fileStringList[2].equals(""), !fileStringList[3].equals(""), !fileStringList[4].equals(""), !fileStringList[5].equals(""));
+                if (operation == OperationType.NOTHING) return ;
+
+                if (operation == OperationType.ENCRYPT_HMAC) {
+                    System.out.println("veio aqui???");
                     AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
 
                     if (authenticateUtils != null) {
@@ -83,8 +90,33 @@ public class Controller implements Initializable {
                     return;
 
                 }
+
+                //encrypt and signed
+                if (operation == OperationType.ENCRYPT_SIGN) {
+
+                    AuthenticateUtils authenticateUtils = verificarSignature(selectedFile, selectedKeyFile);
+
+                    if (authenticateUtils != null) {
+
+                        CipherUtil cipherUtil = verificarDesencriptar(selectedFile, selectedKeyFile);
+                        if (cipherUtil.getDecryptedString() != null) {
+                            txtAreaTotal.setText(cipherUtil.getDecryptedString());
+                            txtAreaTotal.requestFocus();
+                        } else {
+                            System.out.println("Nao existe cifrado");
+                        }
+
+                    } else {
+
+                        popupUtils.MessagePopup((Stage) txtAreaTotal.getScene().getWindow(), "Warning! Encrypted" +
+                                "Doesn't Exist!");
+                    }
+                    return;
+
+                }
+
                 //Se está encriptado mas não está autenticado
-                if (fileStringList[1].equals("") && !fileStringList[0].equals("")) {
+                if (operation == OperationType.ENCRYPT) {
 
                     CipherUtil cipherUtil = verificarDesencriptar(selectedFile, selectedKeyFile);
 
@@ -98,8 +130,28 @@ public class Controller implements Initializable {
                     return;
 
                 }
+                //Se está assinado mas não está cifrado
+                if (operation == OperationType.SIGN) {
+
+                    AuthenticateUtils authenticateUtils = verificarSignature(selectedFile, selectedKeyFile);
+                            //verificarHmac(selectedFile, selectedKeyFile);
+
+                    if (authenticateUtils != null) {
+
+                        txtAreaTotal.setText(authenticateUtils.getInput());
+                        txtAreaTotal.requestFocus();
+
+                    } else {
+                        popupUtils.MessagePopup((Stage) txtAreaTotal.getScene().getWindow(), "Warning! Failed to " +
+                                "Authenticate this file.");
+                    }
+                    return;
+
+                }
+
+
                 //Se está autenticado mas não está encriptado
-                if (fileStringList[0].equals("") && !fileStringList[1].equals("")) {
+                if (operation == OperationType.HMAC) {
 
                     AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
 
@@ -262,6 +314,33 @@ public class Controller implements Initializable {
         return null;
 
     }
+
+    private AuthenticateUtils verificarSignature(File selectedFile, File selectedKeyFile) {
+
+        currentFilePath = selectedFile.getAbsolutePath();
+        String currentKeyPath = selectedKeyFile.getAbsolutePath();
+
+        AuthenticateUtils authenticateUtils = new AuthenticateUtils(FileHandler.readFile(currentFilePath),
+                 Objects.requireNonNull(FileHandler.readFileStringList(currentKeyPath))[4],
+                Objects.requireNonNull(FileHandler.readFileStringList(currentKeyPath))[5], "", "");
+
+        this.currentAuthenticateUtil = authenticateUtils;
+
+        String texto = currentAuthenticateUtil.getInput();
+        String publicKey = currentAuthenticateUtil.getPublicKey();
+        String signature = currentAuthenticateUtil.getSignedtext();
+
+        try {
+            if (currentAuthenticateUtil.verify(texto, signature, publicKey))
+                return authenticateUtils;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
 
     //TODO: Mudar para o ficheiro CipherUtils
     private CipherUtil verificarDesencriptar(File selectedFile, File selectedKeyFile) {

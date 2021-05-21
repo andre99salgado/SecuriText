@@ -66,9 +66,10 @@ public class popupUtils {
         //action para autenticar o texto e guardar num file
         Button authenticate = new Button("Authenticate");
         authenticate.setOnAction(event -> {
-
-            insertKeys(currentStage,text);            
+            //autentiticar
+            insertKeys(currentStage,text, "","");
             CloseAndWarn(event);
+
         });
 
         Button both = new Button("Both");
@@ -82,7 +83,10 @@ public class popupUtils {
             //FileHandler.writeFile(cipherUtil.getKeyAsString(), Paths.get(fileSaved.getParent(), (fileSaved.getName() + "-key.txt")).toAbsolutePath().toString());
 
             //autentiticar
-            AuthenticateUtils authenticateUtils = new AuthenticateUtils(encriptada);
+            insertKeys(currentStage,encriptada, cipherUtil.getIvBytesAsString(),cipherUtil.getKeyAsString());
+            CloseAndWarn(event);
+
+            /*AuthenticateUtils authenticateUtils = new AuthenticateUtils(encriptada);
 
             try {
 
@@ -95,7 +99,7 @@ public class popupUtils {
             } catch (SignatureException | NoSuchAlgorithmException | InvalidKeyException ex) {
                 Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
             }
-            CloseAndWarn(event);
+            CloseAndWarn(event); */
         });
 
         popup(currentStage, encrypt, authenticate, both);
@@ -137,7 +141,7 @@ public class popupUtils {
     }
     
     
-     public static void insertKeys(Stage currentStage, String text) {
+     public static void insertKeys(Stage currentStage, String text, String iv, String encrypt) {
         Label labelS = new Label("Insert your private key");
         TextArea insertS = new TextArea();
         Label labelP = new Label("Insert your public key");
@@ -153,7 +157,7 @@ public class popupUtils {
         okButton.setOnAction((event) -> {
             String privateString = insertS.getText();
             String publicString = insertP.getText();
-            HmacOrSign(currentStage,text,privateString,publicString);
+            HmacOrSign(currentStage,text,privateString,publicString, iv, encrypt);
             closeFromEvent(event);
         });
         Button generateButton = new Button("Generate Keys");
@@ -166,7 +170,7 @@ public class popupUtils {
     
      
      
-      public static void HmacOrSign(Stage currentStage, String text,String privateString, String publicString) {
+      public static void HmacOrSign(Stage currentStage, String text,String privateString, String publicString, String iv, String encrypt) {
         Label label = new Label("Authenticate With Hmac or Sign");
         Button hmac = new Button("HMAC");
         hmac.setOnAction((event) -> {
@@ -177,7 +181,7 @@ public class popupUtils {
                 File fileSaved = FileHandler.FileChooserAndSave(text); // ficheiro original
                 //----------------------------
                 //Guardar as chaves necessárias quando autenticamos o file -----
-                keyaux = new KeysUtils("", authenticateUtils.getPrivateKey(), authenticateUtils.calculateHMAC(text), "");
+                keyaux = new KeysUtils(encrypt, authenticateUtils.getPrivateKey(), authenticateUtils.calculateHMAC(text), iv);
                 FileHandler.writeFileArrayString(keyaux.getKeysF(), Paths.get(fileSaved.getParent(),
                         (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString()); // ficheiro com chave privada
                 //----------------------------
@@ -202,7 +206,7 @@ public class popupUtils {
                File fileSaved = FileHandler.FileChooserAndSave(text); // ficheiro original
                 //----------------------------
                 //Guardar as chaves necessárias quando autenticamos o file -----
-                keyaux = new KeysUtils("", authenticateUtils.getPrivateKey(), authenticateUtils.getSignedText(), "");
+                keyaux = new KeysUtils(encrypt, "", "", iv, authenticateUtils.getPublicKey(), authenticateUtils.getSignedText());
                 FileHandler.writeFileArrayString(keyaux.getKeysF(), Paths.get(fileSaved.getParent(),
                         (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString()); // ficheiro com chave privada
                
