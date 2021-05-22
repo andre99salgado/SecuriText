@@ -2,6 +2,10 @@ package sample;
 
 import java.nio.charset.StandardCharsets;
 import java.security.*;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.Formatter;
 import java.util.logging.Level;
@@ -20,6 +24,7 @@ public class AuthenticateUtils {
     private String privateKey;
     private String publicKey;
     private String hmac;
+    private String signedtext;
 
     public AuthenticateUtils(String input) {
         this.input = input;
@@ -28,13 +33,46 @@ public class AuthenticateUtils {
         publicKey = PublicKeyToString(keyPair.getPublic());
     }
 
-    
+
     // Usado quando se abre um ficheiro e a key do ficheiro
     public AuthenticateUtils(String input, String key, String hmac) {
         this.input = input;
         this.privateKey = key;
-        this.hmac= hmac;
+        this.hmac = hmac;
     }
+
+    public AuthenticateUtils(String input, String publicKey, String signedtext, String nada, String nada2) {
+        this.input = input;
+        this.publicKey = publicKey;
+        this.signedtext = signedtext;
+    }
+
+    public AuthenticateUtils() {
+        keyPair = getKeyPair();
+        privateKey = PrivateKeyToString(keyPair.getPrivate());
+        publicKey = PublicKeyToString(keyPair.getPublic());
+    }
+
+    
+    public AuthenticateUtils(String p,String text, String privateKey, String publicKey) throws InvalidKeySpecException{
+        this.input=text;
+        this.privateKey=privateKey;
+        this.publicKey=publicKey;
+        try {
+            KeyFactory kf = KeyFactory.getInstance("RSA");
+            PKCS8EncodedKeySpec keySpecPKCS8 = new PKCS8EncodedKeySpec(Base64.getDecoder().decode(privateKey));
+            PrivateKey privKey = kf.generatePrivate(keySpecPKCS8);
+            X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKey));
+            RSAPublicKey pubKey = (RSAPublicKey) kf.generatePublic(keySpecX509);
+    
+            this.keyPair = new KeyPair(pubKey, privKey);
+
+        } catch (NoSuchAlgorithmException ex) {
+            Logger.getLogger(AuthenticateUtils.class.getName()).log(Level.SEVERE, null, ex);
+            //TODO:Adicionar popup
+        }
+    }
+
     
 
     public String getSignedText() {
@@ -47,7 +85,7 @@ public class AuthenticateUtils {
     }
 
 
-    public static String sign(String plainText, PrivateKey privateKey) throws Exception {
+    public String sign(String plainText, PrivateKey privateKey) throws Exception {
         Signature privateSignature = Signature.getInstance("SHA256withRSA");
         privateSignature.initSign(privateKey);
         privateSignature.update(plainText.getBytes(StandardCharsets.UTF_8));
@@ -57,16 +95,20 @@ public class AuthenticateUtils {
         return Base64.getEncoder().encodeToString(signature);
     }
 
-    public static boolean verify(String plainText, String signature, PublicKey publicKey) throws Exception {
+    public boolean verify(String plainText, String signature, String publicKey) throws Exception {
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+        X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKey));
+        RSAPublicKey pubKey = (RSAPublicKey) kf.generatePublic(keySpecX509);
+
         Signature publicSignature = Signature.getInstance("SHA256withRSA");
-        publicSignature.initVerify(publicKey);
+        publicSignature.initVerify(pubKey);
         publicSignature.update(plainText.getBytes(StandardCharsets.UTF_8));
 
         byte[] signatureBytes = Base64.getDecoder().decode(signature);
 
         return publicSignature.verify(signatureBytes);
     }
-    
+
 ///////////////   https://stackoverflow.com/questions/39355241/compute-hmac-sha512-with-secret-key-in-java
 
     private static String toHexString(byte[] bytes) {
@@ -77,37 +119,31 @@ public class AuthenticateUtils {
         return formatter.toString();
     }
 
-    
+
     ////// usamos a publica ou a privada ? - verificar o algoritmo
-    
+
     public String calculateHMAC(String data) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
-       
+
         String key = getPrivateKey();
-        //String key = getPublicKey(); -------------------------------_> VERIFICAR SE NÃO É COM A PUBLICA
-        //System.out.println("\n é public key" + key);
-        // System.out.println("\n Esta é a private key 1: " + getPrivateKey());
         SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(), HMAC_SHA512);
         Mac mac = Mac.getInstance(HMAC_SHA512);
         mac.init(secretKeySpec);
         return toHexString(mac.doFinal(data.getBytes()));
     }
- 
-    
+
+
     public String calculateToVerifyHMAC(String data, String key) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
-        //String key = getPrivateKey();
-        //System.out.println("\n é public key" + key);
-        // System.out.println("\n Esta é a private key 1: " + getPrivateKey());
         SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(), HMAC_SHA512);
         Mac mac = Mac.getInstance(HMAC_SHA512);
         mac.init(secretKeySpec);
         return toHexString(mac.doFinal(data.getBytes()));
     }
-    
+
     //// https://community.shopify.com/c/Shopify-APIs-SDKs/Java-HMAC-authentication-verification/td-p/498131
-    
-     public boolean verifyHmac(String message, String hmac, String secretKey) {
+
+    public boolean verifyHmac(String message, String hmac, String secretKey) {
         try {
-            
+
             String hmac1 = calculateToVerifyHMAC(message, secretKey);
             System.out.println("HMAC1 calculado segundo:" + hmac1);
             System.out.println("HMAC1 calculado primeiro:" + hmac);
@@ -120,9 +156,9 @@ public class AuthenticateUtils {
             Logger.getLogger(AuthenticateUtils.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
-     }
+    }
 //////////////
-    
+
 
     private static KeyPair getKeyPair() {
         try {
@@ -151,7 +187,7 @@ public class AuthenticateUtils {
         this.hmac = hmac;
     }
 
-   
+
     public String getPrivateKey() {
         return privateKey;
     }
@@ -167,13 +203,21 @@ public class AuthenticateUtils {
     public void setPublicKey(String publicKey) {
         this.publicKey = publicKey;
     }
-    
+
     public static String PrivateKeyToString(PrivateKey privateKey) {
         return Base64.getEncoder().encodeToString(privateKey.getEncoded());
     }
 
-     public static String PublicKeyToString(PublicKey publicKey) {
+    public static String PublicKeyToString(PublicKey publicKey) {
         return Base64.getEncoder().encodeToString(publicKey.getEncoded());
     }
-    
+
+
+    public String getSignedtext() {
+        return signedtext;
+    }
+
+    public void setSignedtext(String signedtext) {
+        this.signedtext = signedtext;
+    }
 }

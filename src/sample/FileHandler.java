@@ -50,6 +50,7 @@ public class FileHandler {
 
     }
 
+    //escreve texto completo num file
     public static void writeFile(String Text, String fileName) {
         try {
             FileOutputStream fout = new FileOutputStream(fileName);
@@ -62,7 +63,11 @@ public class FileHandler {
         }
     }
 
-    public static void writeFileArrayString(ArrayList<String> Text, String fileName) {
+    //No final podemos fazer override para melhorar o código
+    //Serve para escrever nos ficheiros o conjunto de parâmetros no keys-and-iv.txt para poder abrir os ficheiros
+    //Lista com chave de encrypt, chave privada rsa para hmac e o próprio hmac
+    public static void writeFileArrayString(String[] Text, String fileName) {
+
         try {
             FileOutputStream fout = new FileOutputStream(fileName);
             ObjectOutputStream ow = new ObjectOutputStream(fout);
@@ -74,6 +79,7 @@ public class FileHandler {
         }
     }
 
+    //serve para ler um texto completo saído de um file
     public static String readFile(String filePath) {
 
         try {
@@ -92,15 +98,16 @@ public class FileHandler {
     }
 
 
-    public static ArrayList<String> readFile2(String filePath) {
+    //Serve para ler fos ficheiros o conjunto de parâmetros no keys-and-iv.txt (exemplo onde usamos) para poder abrir os ficheiros
+    //Lista com chave de encrypt, chave privada rsa para hmac e o próprio hmac
+    public static String[] readFileStringList(String filePath) {
 
         try {
             FileInputStream f;
             f = new FileInputStream(filePath);
-
             ObjectInputStream fileStream;
             fileStream = new ObjectInputStream(f);
-            return (ArrayList<String>) fileStream.readObject();
+            return (String[]) fileStream.readObject();
         } catch (EOFException e) {
             System.out.println("\n\nEmpty File \n\n");
         } catch (Exception e) {
