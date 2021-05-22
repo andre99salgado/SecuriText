@@ -26,6 +26,8 @@ public class AuthenticateUtils {
     private String hmac;
     private String signedtext;
 
+   
+    // Construtor com parametro input -- neste momento não é utilizado
     public AuthenticateUtils(String input) {
         this.input = input;
         keyPair = getKeyPair();
@@ -41,19 +43,21 @@ public class AuthenticateUtils {
         this.hmac = hmac;
     }
 
+    // Usado para verificar a assinatura
     public AuthenticateUtils(String input, String publicKey, String signedtext, String nada, String nada2) {
         this.input = input;
         this.publicKey = publicKey;
         this.signedtext = signedtext;
     }
 
+    // Utilizado na geração de RSA key pair
     public AuthenticateUtils() {
         keyPair = getKeyPair();
         privateKey = PrivateKeyToString(keyPair.getPrivate());
         publicKey = PublicKeyToString(keyPair.getPublic());
     }
 
-    
+    // Utilizado para Hmac ou Sign (criar/ler)
     public AuthenticateUtils(String p,String text, String privateKey, String publicKey) throws InvalidKeySpecException{
         this.input=text;
         this.privateKey=privateKey;
@@ -74,7 +78,7 @@ public class AuthenticateUtils {
     }
 
     
-
+    // Obter a assinatura do texto
     public String getSignedText() {
         try {
             return sign(this.input, keyPair.getPrivate());
@@ -84,7 +88,7 @@ public class AuthenticateUtils {
         return null;
     }
 
-
+    //método que realiza a operação de assinatura
     public String sign(String plainText, PrivateKey privateKey) throws Exception {
         Signature privateSignature = Signature.getInstance("SHA256withRSA");
         privateSignature.initSign(privateKey);
@@ -95,6 +99,7 @@ public class AuthenticateUtils {
         return Base64.getEncoder().encodeToString(signature);
     }
 
+    //metódo para verificar a assinatura de um texto
     public boolean verify(String plainText, String signature, String publicKey) throws Exception {
         KeyFactory kf = KeyFactory.getInstance("RSA");
         X509EncodedKeySpec keySpecX509 = new X509EncodedKeySpec(Base64.getDecoder().decode(publicKey));
@@ -109,8 +114,7 @@ public class AuthenticateUtils {
         return publicSignature.verify(signatureBytes);
     }
 
-///////////////   https://stackoverflow.com/questions/39355241/compute-hmac-sha512-with-secret-key-in-java
-
+    //   https://stackoverflow.com/questions/39355241/compute-hmac-sha512-with-secret-key-in-java
     private static String toHexString(byte[] bytes) {
         Formatter formatter = new Formatter();
         for (byte b : bytes) {
@@ -120,8 +124,7 @@ public class AuthenticateUtils {
     }
 
 
-    ////// usamos a publica ou a privada ? - verificar o algoritmo
-
+    //método para cálculo do HMAC
     public String calculateHMAC(String data) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
 
         String key = getPrivateKey();
@@ -131,7 +134,7 @@ public class AuthenticateUtils {
         return toHexString(mac.doFinal(data.getBytes()));
     }
 
-
+    //método auxiliar para verificação do HMAC (calcula o HMAC para verificar)
     public String calculateToVerifyHMAC(String data, String key) throws SignatureException, NoSuchAlgorithmException, InvalidKeyException {
         SecretKeySpec secretKeySpec = new SecretKeySpec(key.getBytes(), HMAC_SHA512);
         Mac mac = Mac.getInstance(HMAC_SHA512);
@@ -139,15 +142,15 @@ public class AuthenticateUtils {
         return toHexString(mac.doFinal(data.getBytes()));
     }
 
-    //// https://community.shopify.com/c/Shopify-APIs-SDKs/Java-HMAC-authentication-verification/td-p/498131
-
+    // https://community.shopify.com/c/Shopify-APIs-SDKs/Java-HMAC-authentication-verification/td-p/498131
+    //métdo de verificação do HMAC
     public boolean verifyHmac(String message, String hmac, String secretKey) {
         try {
 
             String hmac1 = calculateToVerifyHMAC(message, secretKey);
-            System.out.println("HMAC1 calculado segundo:" + hmac1);
-            System.out.println("HMAC1 calculado primeiro:" + hmac);
-            System.out.println("VERDADE OU MENTIRA:" + hmac.equals(hmac1));
+            //System.out.println("HMAC1 calculado segundo:" + hmac1);
+            //System.out.println("HMAC1 calculado primeiro:" + hmac);
+            //System.out.println("VERDADE OU MENTIRA:" + hmac.equals(hmac1));
             return hmac.equals(hmac1);
         } catch (NoSuchAlgorithmException | InvalidKeyException ex) {
             System.out.println("Error verifying hmac" + ex);
@@ -157,9 +160,8 @@ public class AuthenticateUtils {
         }
         return false;
     }
-//////////////
 
-
+    //Gerar par de chaves RSA
     private static KeyPair getKeyPair() {
         try {
             KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
@@ -204,15 +206,6 @@ public class AuthenticateUtils {
         this.publicKey = publicKey;
     }
 
-    public static String PrivateKeyToString(PrivateKey privateKey) {
-        return Base64.getEncoder().encodeToString(privateKey.getEncoded());
-    }
-
-    public static String PublicKeyToString(PublicKey publicKey) {
-        return Base64.getEncoder().encodeToString(publicKey.getEncoded());
-    }
-
-
     public String getSignedtext() {
         return signedtext;
     }
@@ -220,4 +213,16 @@ public class AuthenticateUtils {
     public void setSignedtext(String signedtext) {
         this.signedtext = signedtext;
     }
+    
+    //Conjunto de métodos para converter chaves para string____________________
+    public static String PrivateKeyToString(PrivateKey privateKey) {
+        return Base64.getEncoder().encodeToString(privateKey.getEncoded());
+    }
+
+    
+    public static String PublicKeyToString(PublicKey publicKey) {
+        return Base64.getEncoder().encodeToString(publicKey.getEncoded());
+    }
+    //_________________________________________________________________________
+
 }

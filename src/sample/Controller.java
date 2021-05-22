@@ -40,7 +40,68 @@ public class Controller implements Initializable {
     private File selectedFile = null;
     private File selectedKeyFile = null;
     private static KeysUtils keyaux;
-
+    
+    //____________________________________________Texto do Help_________________
+    private String textoHelp = "Damos-lhe as boas-vindas ao editor de texto seguro! \n"
+            + "\n"
+            + "\n"
+            + "Novo Documento \n"
+            + "\n"
+            + "Selecionando a opção “New” abre uma nova janela do editor de texto.\n"
+            + "\n"
+            + "Abrir documentos \n"
+            + "\n"
+            + "Caso o que pretenda seja abrir um ficheiro selecione o item “Open”. Esta seleção faz com que aceda á pasta dos ficheiros criados, selecionando o ficheiro que deseja abrir, seguido do respetivo ficheiro de chaves.\n"
+            + "\n"
+            + "Guardar Documentos \n"
+            + "\n"
+            + "Guardar pela primeira-vez \n"
+            + "\n"
+            + "Para efetuar esta ação deve selecionar “Save” que desencadeia uma janela com três opções, “Encrypt”, “Authenticate” e “Both”. \n"
+            + "	\n"
+            + "Ao selecionar:\n"
+            + "\n"
+            + "•	“Encrypt” estará a guardar o ficheiro na sua forma cifrada.\n"
+            + "•	“Authenticate” guardará o ficheiro na sua forma autenticada. \n"
+            + "Ao selecionar esta opção irá ter acesso a uma janela na qual pode inserir o par de chaves pública e privada a usar. Se não tem nenhum par de chaves ou quer gerar um novo por qualquer motivo, basta clicar em “Generate Pair”.\n"
+            + "Após isso, efetua a cópia das chaves a usar para a janela que lhe pede a inserção das mesmas e clica “OK”. Esta seleção desencadeia a janela onde tem à escolha duas formas de autenticação, “HMAC” ou “SIGN”, para autenticar o seu ficheiro basta selecionar uma e guardar o ficheiro. \n"
+            + "		\n"
+            + "•	“Both” irá guardar o ficheiro na sua forma cifrada autenticada.\n"
+            + "Ao selecionar esta opção irá ter acesso a uma janela na qual pode inserir o par de chaves pública e privada a usar. Se não tem nenhum par de chaves ou quer gerar um novo por qualquer motivo, basta clicar em “Generate Pair”.\n"
+            + "Após isso, efetua a copia das chaves a usar para a janela que lhe pede a inserção das mesmas e clica “OK”. Esta seleção desencadeia a janela onde tem à escolha duas formas de autenticação, “HMAC” ou “SIGN”, para autenticar e cifrar o seu ficheiro basta selecionar uma e guardar o ficheiro. \n"
+            + "\n"
+            + " \n"
+            + "\n"
+            + "\n"
+            + "\n"
+            + "\n"
+            + "Guardar\n"
+            + "\n"
+            + "Após a abertura do ficheiro, este pode ser alterado e guardado novamente, bastando para isso aceder á opção “Save”. \n"
+            + "\n"
+            + "\n"
+            + "Guardar Como \n"
+            + "\n"
+            + "Ao aceder ao “Save as” é direcionado para a janela com as três opções, “Encrypt”, “Authenticate” ou“Both”, descritas anteriormente (em Guardar pela primeira-vez). Deve escolher a que desejar, e o seu ficheiro será guardado com as preferências que selecionar. \n"
+            + "\n"
+            + "\n"
+            + "Gerar par de chaves pública e privada\n"
+            + "\n"
+            + "Se pretender gerar um par de chaves publica e privada, basta aceder ao menu “Keys” e selecionar a opção “Generate Key Pair”.\n"
+            + "\n"
+            + "\n"
+            + "Copiar e colar texto \n"
+            + "\n"
+            + "Para copiar ou colar texto basta carregar no botão direito do rato e tem acesso às respetivas opções.\n"
+            + "\n"
+            + "Sair \n"
+            + "\n"
+            + "Para terminar o uso da aplicação opta pela opção “Quit”.\n"
+            + "\n"
+            + "";
+    //__________________________________________________________________________
+    
+    
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
 
@@ -63,13 +124,11 @@ public class Controller implements Initializable {
                 //Se está encriptado e autenticado
 
 
-                System.out.println("oii ");
                 OperationType operation = Operations.chooseOperation(!fileStringList[0].equals(""), !fileStringList[1].equals(""),
                         !fileStringList[2].equals(""), !fileStringList[3].equals(""), !fileStringList[4].equals(""), !fileStringList[5].equals(""));
                 if (operation == OperationType.NOTHING) return ;
 
                 if (operation == OperationType.ENCRYPT_HMAC) {
-                    System.out.println("veio aqui???");
                     AuthenticateUtils authenticateUtils = verificarHmac(selectedFile, selectedKeyFile);
 
                     if (authenticateUtils != null) {
@@ -193,7 +252,7 @@ public class Controller implements Initializable {
             if (selectedFile != null && selectedKeyFile != null) {
 
                 String tipo_ficheiro = getFileType(selectedKeyFile);
-                System.out.println("Tipo de Ficheiro:" + tipo_ficheiro);
+                //System.out.println("Tipo de Ficheiro:" + tipo_ficheiro);
 
                 if (tipo_ficheiro.equals("keys-and-iv.txt")) {
 
@@ -255,12 +314,10 @@ public class Controller implements Initializable {
     }
     
     
-    /*
-    @FXML
-    void setKeyPair(ActionEvent event,String text) {
-         popupUtils.insertKeys((Stage) txtAreaTotal.getScene().getWindow(),text);
+     @FXML
+    void helpButtonControl(ActionEvent event) {
+         popupUtils.PopupHelp((Stage) txtAreaTotal.getScene().getWindow(),textoHelp);
     }
-    */
     
     
     @FXML
@@ -293,7 +350,8 @@ public class Controller implements Initializable {
         System.exit(0);
     }
 
-    //TODO: Mudar para o ficheiro AuthenticateUtils
+    
+    //métodos auxiliares para a verificação de Hmac e Assinatura_____________________
     private AuthenticateUtils verificarHmac(File selectedFile, File selectedKeyFile) {
 
         currentFilePath = selectedFile.getAbsolutePath();
@@ -341,8 +399,9 @@ public class Controller implements Initializable {
 
     }
 
-
-    //TODO: Mudar para o ficheiro CipherUtils
+    //__________________________________________________________________________
+   
+    // Método para auxilio de desencriptação (na abertura do ficheiro)
     private CipherUtil verificarDesencriptar(File selectedFile, File selectedKeyFile) {
 
         currentFilePath = selectedFile.getAbsolutePath();
@@ -356,7 +415,7 @@ public class Controller implements Initializable {
 
     }
 
-    //TODO: Mudar para o ficheiro FileHandler
+    //Método para o obter o tipo do ficheiro
     private String getFileType(File file) {
         if (file != null) {
             String nome = file.getName();
@@ -365,5 +424,7 @@ public class Controller implements Initializable {
         }
         return "";
     }
+    
+    
 
 }

@@ -2,11 +2,10 @@ package sample;
 
 public class Operations {
 
-    public static OperationType chooseOperation(boolean hasEncryptKey, boolean hasPrivateKey, boolean hasHmac, boolean hasIv, boolean hasPublicKey, boolean hasSignature){
-        System.out.println(hasEncryptKey);
-        System.out.println(hasPrivateKey);
-        System.out.println(hasIv);
-        System.out.println(hasHmac);
+    public static OperationType chooseOperation
+        (boolean hasEncryptKey, boolean hasPrivateKey, boolean hasHmac, 
+         boolean hasIv, boolean hasPublicKey, boolean hasSignature){
+      
         if (hasEncryptKey && hasPrivateKey && hasIv && hasHmac) return OperationType.ENCRYPT_HMAC;
         if (hasEncryptKey && hasPublicKey && hasIv ) return OperationType.ENCRYPT_SIGN;
         if (hasPublicKey && hasSignature) return OperationType.SIGN;
@@ -14,11 +13,6 @@ public class Operations {
         if (hasEncryptKey && hasIv) return  OperationType.ENCRYPT;
         return OperationType.NOTHING;
     }
-
-
-
-
-
 
 
 }

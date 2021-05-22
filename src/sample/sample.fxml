@@ -28,7 +28,6 @@
   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 -->
 
-<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
@@ -37,8 +36,7 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox fx:id="anchorid" prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/15.0.1"
-      xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
+<VBox fx:id="anchorid" prefHeight="400.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="sample.Controller">
 
     <children>
         <MenuBar VBox.vgrow="NEVER">
@@ -63,7 +61,7 @@
                 </Menu>
                 <Menu mnemonicParsing="false" text="Help">
                     <items>
-                        <MenuItem mnemonicParsing="false" text="About MyHelloApp" />
+                        <MenuItem mnemonicParsing="false" onAction="#helpButtonControl" text="About MyHelloApp" />
                     </items>
                 </Menu>
             </menus>
@@ -75,11 +73,6 @@
         </AnchorPane>
         <MenuBar>
             <menus>
-                <Menu mnemonicParsing="false">
-                    <graphic>
-                        <Label text="Palavras:0" />
-                    </graphic>
-                </Menu>
                 <Menu mnemonicParsing="false" />
             </menus>
         </MenuBar>

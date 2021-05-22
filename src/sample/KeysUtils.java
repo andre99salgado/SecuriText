@@ -23,7 +23,7 @@ public class KeysUtils {
         keysF[3] = iv;
         keysF[4] = publicKey;
         keysF[5] = signature;
-        System.out.printf("Key> " + Arrays.toString(keysF));
+        //System.out.printf("Key> " + Arrays.toString(keysF));
     }
 
     public KeysUtils(String encrypt, String privateKey, String mac, String iv) {
@@ -33,7 +33,7 @@ public class KeysUtils {
         keysF[3] = iv;
         keysF[4] = "";
         keysF[5] = "";
-        System.out.printf("Key> " + Arrays.toString(keysF));
+        //System.out.printf("Key> " + Arrays.toString(keysF));
     }
     public void setKeys(String encrypt, String privateKey, String mac, String iv, String publicKey) {
         keysF[0] = encrypt;

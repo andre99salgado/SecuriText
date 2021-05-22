@@ -12,11 +12,9 @@ import javafx.stage.Stage;
 import java.io.File;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
-import java.security.Key;
 import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -26,6 +24,10 @@ public class popupUtils {
 
     private static KeysUtils keyaux;
     
+
+
+    // Função geradora de popups
+    // aceita como parametro de entrada o stage atual e uma lista de Nodes (botões, texto, etc)
     public static void popup(Stage currentStage, Node... es) {
 
         currentStage.setTitle("Popup Example");
@@ -43,6 +45,9 @@ public class popupUtils {
         stage.show();
     }
 
+
+
+    // Popup de seleção de operação [Encrypt, Authenticate, Both]
     public static void selectionPopup(Stage currentStage, String text) {
 
         //action para encriptar o texto e guardar num file
@@ -74,9 +79,6 @@ public class popupUtils {
 
         Button both = new Button("Both");
         both.setOnAction(event -> {
-            //FAZER
-            // Stage stage = (Stage) ((Button) event.getSource()).getScene().getWindow();
-
             //cifrar
             CipherUtil cipherUtil = new CipherUtil(text);
             String encriptada = cipherUtil.getEncryptedString();
@@ -87,15 +89,11 @@ public class popupUtils {
             CloseAndWarn(event);
 
             /*AuthenticateUtils authenticateUtils = new AuthenticateUtils(encriptada);
-
             try {
-
                 File fileSaved = FileHandler.FileChooserAndSave(encriptada); // ficheiro encriptado
-
                 keyaux = new KeysUtils(cipherUtil.getKeyAsString(), authenticateUtils.getPrivateKey(), authenticateUtils.calculateHMAC(encriptada), cipherUtil.getIvBytesAsString());
                 assert fileSaved != null;
                 FileHandler.writeFileArrayString(keyaux.getKeysF(), Paths.get(fileSaved.getParent(), (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString());
-
             } catch (SignatureException | NoSuchAlgorithmException | InvalidKeyException ex) {
                 Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -106,12 +104,14 @@ public class popupUtils {
 
     }
 
+    // Função para fechar popup
     private static void closeFromEvent(ActionEvent event) {
         Node source = (Node) event.getSource();
         Stage stage = (Stage) source.getScene().getWindow();
         stage.close();
     }
 
+    // Função que avisa o utilizador a remover o ficheiro gerado da pasta onde foi gravada com um botão para fechar
     private static void CloseAndWarn(ActionEvent event) {
         Stage newStage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         closeFromEvent(event);
@@ -119,6 +119,7 @@ public class popupUtils {
 
     }
 
+    // Função de Popup que apresenta uma mensagem (parâmetro de entrada) e um botão "OK" que fecha o Popup
     public static void MessagePopup(Stage currentStage, String message) {
         Label label = new Label(message);
         Button okButton = new Button("OK");
@@ -126,8 +127,20 @@ public class popupUtils {
         popup(currentStage, label, okButton);
 
     }
+    
+    // Função de Popup que apresenta o texto Help
+    public static void PopupHelp(Stage currentStage, String texto) {
+        TextArea ta = new TextArea(texto);
+        ta.setEditable(false);
+        Button okButton = new Button("OK");   
+        okButton.setOnAction(popupUtils::closeFromEvent);
+        popup(currentStage, ta, okButton);
+
+    }
+    
 
     
+    // Popup no qual é possível abrir outro popup para gerar pares de chaves  
     public static void RSAKeys(Stage currentStage) {
         Label label = new Label("Do you wish to Generate a public and a private key?");
         Button okButton = new Button("YES");
@@ -140,7 +153,7 @@ public class popupUtils {
         popup(currentStage, label, okButton, noButton);
     }
     
-    
+    // Popup de entrada do par de chaves
      public static void insertKeys(Stage currentStage, String text, String iv, String encrypt) {
         Label labelS = new Label("Insert your private key");
         TextArea insertS = new TextArea();
@@ -170,6 +183,7 @@ public class popupUtils {
     
      
      
+    // Popup de decisão entre HMAC e Signing do ficheiro a ser gravado
       public static void HmacOrSign(Stage currentStage, String text,String privateString, String publicString, String iv, String encrypt) {
         Label label = new Label("Authenticate With Hmac or Sign");
         Button hmac = new Button("HMAC");
@@ -210,7 +224,6 @@ public class popupUtils {
                 FileHandler.writeFileArrayString(keyaux.getKeysF(), Paths.get(fileSaved.getParent(),
                         (getFileType(fileSaved.getName()) + "_keys-and-iv.txt")).toAbsolutePath().toString()); // ficheiro com chave privada
                
-                System.out.println("Texto assinado" + authenticateUtils.getSignedText());
                 
                 } catch (InvalidKeySpecException ex) {
                 Logger.getLogger(popupUtils.class.getName()).log(Level.SEVERE, null, ex);
@@ -225,11 +238,11 @@ public class popupUtils {
     
     
     
+    // Popup que mostra as chaves
     public static void ShowKeys(ActionEvent event) {
         
        AuthenticateUtils authentic = new AuthenticateUtils();
        authentic.getPrivateKey();
-       System.out.println("ESTOU AQUI" +  authentic.getPrivateKey());
        authentic.getPublicKey();
        //String public =  authentic.getPublicKey();
        
@@ -257,12 +270,11 @@ public class popupUtils {
     
     
     
+
+    // Função que devolve a extensão do ficheiro
     private static String getFileType(String nome) {
-        System.out.println(nome);
         if (nome != null) {
-            System.out.println("asfafs: " + getExtensionByStringHandling(nome).get());
             String[] partes = nome.split(getExtensionByStringHandling(nome).get());
-            System.out.println(partes[0]);
             return partes[0].substring(0, partes[0].length() - 1);
         }
         return "";

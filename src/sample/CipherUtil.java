@@ -3,28 +3,31 @@ package sample;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
 
-//TODO: remover signature exceptions
-//TODO: Bibliografia/Credits https://www.baeldung.com/java-aes-encryption-decryption
 public class CipherUtil {
 
-    private byte[] ivBytes;
-    //TODO: remover ou deixar estar,porque IV pode ser público
-    private IvParameterSpec iv = null;
-    private static final String algorithm = "AES/CTR/NoPadding";
+    // Cifra, Modo de Cifra e Padding Escolhido
+    private static final String algorithm = "AES/CBC/PKCS5Padding";
 
+
+    // Armazena o IvParameterSpec do Objeto
+    private IvParameterSpec iv = null;
+
+    // Armazena os bytes do IV do Objeto
+    private byte[] ivBytes;
+
+    // Usado para armazenar o texto limpo ou o criptograma
     private String input;
+
+    // Armazena a Chave gerada ou lida de um ficheiro
     private SecretKey key;
 
-    // Usado quando se está a criar um ficheiro pela primeira vez
-    // A key é gerada pelo programa
+    // Usado quando se está a criar um ficheiro pela primeira vez, em que ainda não existe
+    // Chave nem IV
     public CipherUtil(String input) {
         this.input = input;
         try {
@@ -34,35 +37,37 @@ public class CipherUtil {
         }
         iv = generateIv();
         ivBytes = iv.getIV();
-        System.out.println(getIvBytesAsString());
     }
 
-    // Usado quando se abre um ficheiro e a key do ficheiro
+    // Usado quando se abre um ficheiro e a key e IV correspondente a esse ficheiro
     public CipherUtil(String input, String key, byte[] ivBytesInput) {
         this.input = input;
         this.key = StringToSecretKey(Base64.getDecoder().decode(key));
         this.ivBytes = ivBytesInput;
         iv = new IvParameterSpec(ivBytesInput);
-        System.out.println(getIvBytesAsString());
     }
 
     public byte[] getIvBytes() {
         return ivBytes;
     }
 
+    // Transforma os bytes em Base64 para possívelmente ser armazenado
     public String getIvBytesAsString() {
         return Base64.getEncoder().encodeToString(ivBytes);
     }
 
+    // Transforma os IV em Base64 em Bytes para ser utilizado pela classe (após a leitura deste do ficheiro)
     public static byte[] getStringAsIv(String s) {
         return Base64.getDecoder().decode(s);
     }
 
-    //Devolve chave como string (para gravar)
+    //Devolve chave como string (para ser escrita para o ficheiro)
     public String getKeyAsString() {
         return SecretKeyToString(this.key);
     }
 
+    // Atualiza o input atual
+    // Usado quando o utilizador abriu um ficheiro e pretende gravar com a mesma chave/IV
     public void setInput(String input) {
         this.input = input;
     }
@@ -77,23 +82,30 @@ public class CipherUtil {
         return decrypt(algorithm, this.input, this.key, this.iv);
     }
 
+    // Gera uma chave aleatória
     public static SecretKey generateKey(int n) throws NoSuchAlgorithmException {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(n);
         return keyGenerator.generateKey();
     }
 
-    //TODO: Remover caso IV seja removido
+    // Gera um IV aleatório
     public static IvParameterSpec generateIv() {
         byte[] iv = new byte[16];
         new SecureRandom().nextBytes(iv);
         return new IvParameterSpec(iv);
     }
 
+    /*
+        Encripta texto
+        algorithm -> algortimo utilizado para a cifra
+        input -> texto de entrada a ser encriptado
+        key -> chave usada para encriptar
+        iv -> IV usado para este modo de encriptação
 
+        devolve criptograma no formato de Base64
+     */
     public static String encrypt(String algorithm, String input, SecretKey key, IvParameterSpec iv) {
-
-
         byte[] cipherText = null;
         try {
             Cipher cipher = null;
@@ -107,6 +119,15 @@ public class CipherUtil {
                 .encodeToString(cipherText);
     }
 
+    /*
+        Decifra texto
+        algorithm -> algortimo utilizado para a cifra
+        input -> texto de entrada a ser encriptado
+        key -> chave usada para encriptar
+        iv -> IV usado para este modo de encriptação
+
+        devolve string
+     */
     public static String decrypt(String algorithm, String cipherText, SecretKey key, IvParameterSpec iv) {
 
         byte[] plainText = null;
@@ -122,10 +143,12 @@ public class CipherUtil {
         return new String(plainText);
     }
 
+    // transforma a chave em string para ser possível guardar
     public static String SecretKeyToString(SecretKey secretKey) {
         return Base64.getEncoder().encodeToString(secretKey.getEncoded());
     }
 
+    // transforma a string em chave para ser utilizado pelo objeto
     public static SecretKey StringToSecretKey(byte[] decodedKey) {
         return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
     }
